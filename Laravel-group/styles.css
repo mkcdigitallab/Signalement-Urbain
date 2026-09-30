@@ -3004,26 +3004,26 @@ select:focus-visible {
 }
 .citizen-report-card .report-card-info{
   min-width:0;
-  padding:15px 16px 14px;
+  padding:10px 13px 11px;
   display:flex;
   flex-direction:column;
   justify-content:flex-start;
 }
 .citizen-report-card .citizen-category-label{
-  margin-bottom:5px;
-  font-size:9.5px;
+  margin-bottom:3px;
+  font-size:8.5px;
 }
 .citizen-report-card .report-title-text{
-  margin:0 0 8px;
-  font-size:15px;
-  line-height:1.35;
+  margin:0 0 5px;
+  font-size:13.5px;
+  line-height:1.25;
 }
 .citizen-report-card .report-loc-time{
-  font-size:11px;
+  font-size:10px;
 }
 .citizen-report-card .citizen-report-footer{
-  margin-top:13px;
-  padding-top:10px;
+  margin-top:8px;
+  padding-top:7px;
 }
 
 /* Mes signalements : compact, indépendant du catalogue */
