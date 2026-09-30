@@ -2042,3 +2042,684 @@ button {
     align-items: flex-start;
   }
 }
+
+/* ==========================================================================
+   FRONTEND POLISH — 30/09/2026
+   Corrections visuelles : densité, responsive, hiérarchie, tables, mobile.
+   ========================================================================== */
+
+/* Hiérarchie générale */
+.app-content-scroll {
+  max-width: 1600px;
+  width: 100%;
+  margin-inline: auto;
+  padding: 24px clamp(18px, 2.5vw, 40px) 36px;
+}
+
+.app-content-scroll > * {
+  min-width: 0;
+}
+
+/* Bandeaux : utiles mais beaucoup moins envahissants */
+.test-version-banner {
+  min-height: 46px;
+  padding: 7px clamp(14px, 2vw, 28px);
+}
+
+.workflow-step-banner {
+  padding: 6px clamp(14px, 2vw, 28px);
+  min-height: 38px;
+}
+
+.workflow-steps-chain {
+  scrollbar-width: thin;
+}
+
+/* Topbar : meilleure répartition */
+.app-topbar {
+  min-height: 64px;
+  height: auto;
+  padding: 10px clamp(16px, 2.5vw, 32px);
+  gap: 16px;
+}
+
+.topbar-left,
+.topbar-right-controls {
+  min-width: 0;
+}
+
+.topbar-left {
+  flex: 1 1 auto;
+}
+
+.topbar-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.topbar-right-controls {
+  flex: 0 1 auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.region-select-badge,
+.role-switcher-badge {
+  max-width: 220px;
+}
+
+.region-select-badge select,
+.role-switcher-badge select {
+  min-width: 0;
+  max-width: 150px;
+}
+
+/* Réduction de la surcharge chromatique */
+.kpi-icon-pill.blue,
+.kpi-icon-pill.orange,
+.kpi-icon-pill.red,
+.kpi-icon-pill.gray {
+  filter: saturate(.82);
+}
+
+.inspection-report-box,
+.poste-depot-card {
+  background: var(--bg-card);
+}
+
+.inspection-report-box {
+  border-color: color-mix(in srgb, #0284c7 65%, var(--border-color));
+}
+
+.poste-depot-card {
+  border-color: color-mix(in srgb, #2563eb 60%, var(--border-color));
+}
+
+/* Cartes citoyen : hiérarchie plus nette */
+.citizen-report-card {
+  min-width: 0;
+  align-items: flex-start;
+  padding: 14px;
+}
+
+.report-thumb-img {
+  width: 88px;
+  height: 88px;
+}
+
+.report-card-info {
+  min-width: 0;
+  gap: 7px;
+}
+
+.report-title-text {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.report-loc-time {
+  flex-wrap: wrap;
+}
+
+/* Tables : le conteneur parent peut défiler sans casser toute la page */
+.clean-data-table {
+  min-width: 680px;
+}
+
+.dashboard-card-widget,
+.form-card-panel {
+  min-width: 0;
+}
+
+/* Wizard : respiration et lecture */
+.wizard-stepper-header {
+  max-width: 900px;
+  margin-inline: auto;
+  padding-inline: 20px;
+}
+
+.categories-grid-tiles {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.cat-tile-btn {
+  min-height: 96px;
+}
+
+.form-grid-layout {
+  align-items: start;
+}
+
+/* Auth : plus équilibrée sur desktop */
+.auth-container-card {
+  max-width: 900px;
+}
+
+.auth-left-branding {
+  padding: 36px 32px;
+}
+
+.auth-right-form-pane {
+  padding: 34px 32px;
+}
+
+/* Focus clavier visible */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 3px solid rgba(0, 135, 90, .28);
+  outline-offset: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   TABLETTE
+   -------------------------------------------------------------------------- */
+@media (max-width: 1100px) {
+  .app-sidebar {
+    width: 232px;
+  }
+
+  .app-topbar {
+    align-items: flex-start;
+  }
+
+  .topbar-right-controls {
+    gap: 8px;
+  }
+
+  .region-select-badge,
+  .role-switcher-badge {
+    padding: 6px 9px;
+  }
+
+  .btn-report-quick {
+    padding-inline: 13px;
+  }
+
+  .admin-kpi-grid {
+    gap: 12px;
+  }
+
+  .citizen-report-card {
+    gap: 12px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   MOBILE
+   -------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+  html,
+  body {
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .app-container-fluid {
+    min-width: 0;
+  }
+
+  /* Le bandeau workflow n'a plus sa place en permanence sur petit écran. */
+  .workflow-step-banner {
+    display: none;
+  }
+
+  .test-version-banner {
+    padding: 8px 12px;
+    gap: 8px;
+  }
+
+  .test-version-title {
+    font-size: 11px;
+  }
+
+  .test-version-actors-group {
+    width: 100%;
+    overflow-x: auto;
+    justify-content: flex-start;
+    scrollbar-width: none;
+  }
+
+  .test-version-actors-group::-webkit-scrollbar {
+    display: none;
+  }
+
+  .actor-nav-pill {
+    flex: 0 0 auto;
+    padding: 6px 11px;
+  }
+
+  .btn-scenario-guide {
+    display: none;
+  }
+
+  /* Sidebar -> navigation mobile compacte */
+  .app-sidebar {
+    width: 100%;
+    height: auto;
+    padding: 8px 10px 9px;
+    flex-shrink: 0;
+  }
+
+  .sidebar-logo-brand {
+    padding: 4px 4px 8px;
+    margin-bottom: 7px;
+  }
+
+  .brand-icon-box {
+    width: 36px;
+    height: 36px;
+    font-size: 17px;
+    border-radius: 10px;
+  }
+
+  .brand-title {
+    font-size: 14px;
+  }
+
+  .brand-badge-flag {
+    font-size: 9px;
+  }
+
+  .sidebar-nav-list {
+    width: 100%;
+    gap: 5px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+  }
+
+  .sidebar-nav-list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .sidebar-nav-item {
+    flex: 0 0 auto;
+    width: auto;
+  }
+
+  .sidebar-nav-link {
+    width: auto;
+    min-height: 40px;
+    padding: 8px 11px;
+    font-size: 11.5px;
+    white-space: nowrap;
+    gap: 7px;
+  }
+
+  .sidebar-nav-link i,
+  .sidebar-nav-link svg {
+    width: auto;
+    font-size: 14px;
+  }
+
+  .nav-badge-pill {
+    margin-left: 1px;
+    padding: 1px 6px;
+    font-size: 9px;
+  }
+
+  .sidebar-footer-box {
+    display: none;
+  }
+
+  /* Topbar -> deux niveaux lisibles */
+  .app-topbar {
+    min-height: auto;
+    padding: 10px 12px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 9px;
+  }
+
+  .topbar-left {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .topbar-title {
+    font-size: 17px;
+  }
+
+  .role-pill-indicator {
+    font-size: 9.5px;
+    padding: 4px 8px;
+  }
+
+  .topbar-right-controls {
+    width: 100%;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    justify-content: flex-start;
+    gap: 7px;
+    padding-bottom: 1px;
+    scrollbar-width: none;
+  }
+
+  .topbar-right-controls::-webkit-scrollbar {
+    display: none;
+  }
+
+  .region-select-badge,
+  .role-switcher-badge {
+    flex: 0 0 auto;
+    max-width: none;
+    padding: 6px 9px;
+    font-size: 11px;
+  }
+
+  .region-select-badge select,
+  .role-switcher-badge select {
+    max-width: 120px;
+    font-size: 11px;
+  }
+
+  .action-circle-btn {
+    flex: 0 0 36px;
+    width: 36px;
+    height: 36px;
+  }
+
+  .btn-report-quick {
+    flex: 0 0 auto;
+    padding: 8px 12px;
+    font-size: 11px;
+  }
+
+  /* Contenu */
+  .app-content-scroll {
+    padding: 16px 12px 28px;
+    gap: 16px;
+  }
+
+  /* Hero citoyen */
+  .citizen-welcome-hero {
+    padding: 20px;
+    border-radius: 16px;
+    align-items: flex-start;
+  }
+
+  .citizen-welcome-content h2 {
+    font-size: 21px;
+  }
+
+  .citizen-welcome-content p {
+    font-size: 12.5px;
+  }
+
+  .citizen-hero-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .citizen-hero-buttons > * {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .confirmation-alert-card,
+  .authorization-box {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 15px;
+  }
+
+  /* KPI */
+  .admin-kpi-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 9px;
+  }
+
+  .kpi-stat-box {
+    padding: 13px;
+    gap: 10px;
+  }
+
+  .kpi-icon-pill {
+    width: 38px;
+    height: 38px;
+    font-size: 16px;
+  }
+
+  .kpi-count-number {
+    font-size: 22px;
+  }
+
+  .kpi-label-text {
+    font-size: 10px;
+  }
+
+  .admin-middle-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .donut-chart-container {
+    flex-wrap: wrap;
+    gap: 18px;
+  }
+
+  /* Cartes signalements */
+  .citizen-reports-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .citizen-report-card {
+    padding: 12px;
+  }
+
+  .report-thumb-img {
+    width: 72px;
+    height: 72px;
+  }
+
+  .report-title-text {
+    font-size: 13px;
+  }
+
+  .report-loc-time {
+    font-size: 11px;
+  }
+
+  /* Wizard */
+  .wizard-stepper-header {
+    overflow-x: auto;
+    justify-content: flex-start;
+    gap: 28px;
+    padding-inline: 4px;
+    scrollbar-width: none;
+  }
+
+  .wizard-stepper-header::-webkit-scrollbar {
+    display: none;
+  }
+
+  .wizard-stepper-header::before {
+    left: 20px;
+    right: 20px;
+  }
+
+  .wizard-step-node {
+    flex: 0 0 64px;
+  }
+
+  .step-label {
+    font-size: 10px;
+    white-space: nowrap;
+  }
+
+  .categories-grid-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .cat-tile-btn {
+    min-height: 82px;
+    padding: 12px 8px;
+  }
+
+  .cat-tile-btn i,
+  .cat-tile-btn svg {
+    font-size: 19px;
+  }
+
+  .cat-tile-btn span {
+    font-size: 11px;
+  }
+
+  .form-grid-layout {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .form-card-panel {
+    padding: 16px;
+    border-radius: 14px;
+  }
+
+  .priority-selector-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Inspection / objets */
+  .inspection-content-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .inspection-photo-thumb {
+    width: 100%;
+    height: 150px;
+  }
+
+  .objets-search-inputs {
+    grid-template-columns: 1fr;
+  }
+
+  /* Tables */
+  .clean-data-table {
+    min-width: 620px;
+  }
+
+  .dashboard-card-widget {
+    overflow-x: auto;
+  }
+
+  /* Auth */
+  .auth-page-wrapper {
+    padding: 12px;
+  }
+
+  .auth-container-card {
+    max-width: 100%;
+    border-radius: 16px;
+  }
+
+  .auth-left-branding {
+    padding: 22px 20px;
+    gap: 20px;
+  }
+
+  .auth-hero-text h2 {
+    font-size: 22px;
+  }
+
+  .auth-features-list {
+    gap: 8px;
+  }
+
+  .auth-right-form-pane {
+    padding: 22px 18px;
+    gap: 15px;
+  }
+
+  .auth-demo-buttons-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Modales */
+  .modal-overlay-bg {
+    padding: 10px;
+    align-items: flex-end;
+  }
+
+  .modal-card-dialog {
+    max-height: 94vh;
+    border-radius: 18px 18px 12px 12px;
+  }
+
+  .modal-dialog-header {
+    padding: 15px 17px;
+  }
+
+  .modal-dialog-body {
+    padding: 17px;
+  }
+
+  .modal-dialog-footer {
+    padding: 12px 17px;
+    flex-wrap: wrap;
+  }
+
+  .modal-dialog-footer > button {
+    flex: 1 1 140px;
+  }
+
+  .app-toast-alert {
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    justify-content: center;
+    text-align: center;
+  }
+}
+
+/* Très petits écrans */
+@media (max-width: 420px) {
+  .brand-text-block {
+    display: none;
+  }
+
+  .topbar-title {
+    font-size: 15px;
+  }
+
+  .admin-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .kpi-stat-box {
+    min-height: 68px;
+  }
+
+  .citizen-report-card {
+    align-items: center;
+  }
+
+  .report-thumb-img {
+    width: 64px;
+    height: 64px;
+  }
+
+  .wizard-stepper-header {
+    gap: 22px;
+  }
+}
+
+/* Respecte les préférences de mouvement réduit */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
