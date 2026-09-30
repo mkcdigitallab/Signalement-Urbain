@@ -1465,37 +1465,26 @@ function openReportDetailsModal(reportId) {
     content: `
       <div class="report-detail-modal-content">
         <img class="report-detail-modal-image" src="${report.photo || 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=900&q=80'}" alt="${escapeHtml(report.title)}">
-        
         <div class="report-detail-modal-status">
           <span class="status-tag ${statusClasses[report.status]}">${statusLabels[report.status]}</span>
           <span class="report-detail-priority">Priorité : <strong>${escapeHtml(report.priority)}</strong> · ${escapeHtml(report.service || 'Service municipal')}</span>
         </div>
-        
-        <div class="report-detail-description">
-
-          <span class="status-tag ${statusClasses[report.status]}">
-            ${statusLabels[report.status]}
-          </span>
-          <span style="font-size:12.5px; font-weight:700; color:var(--text-muted);">
-            Priorité : <strong>${report.priority}</strong> · Service : <strong>${report.service}</strong>
-          </span>
+        <div class="report-detail-section">
+          <span class="report-detail-label">${icon('file-text', 13)} Description du problème</span>
+          <p>${escapeHtml(report.description || 'Aucune description renseignée.')}</p>
         </div>
-        
-        <div>
-          <h4 style="font-size:14px; font-weight:800; color:var(--text-main); margin-bottom:4px;">Description du problème :</h4>
-          <p style="font-size:13px; color:var(--text-muted); line-height:1.5;">${escapeHtml(report.description)}</p>
+        <div class="report-detail-location">
+          ${icon('map-pin', 14)}
+          <div><span>Localisation</span><strong>${escapeHtml(report.location)}</strong></div>
         </div>
-        
-        <div style="font-size:12.5px; color:var(--text-main); display:flex; align-items:center; gap:8px;">
-          ${icon('map-pin', 14)} <strong>Localisation :</strong> ${escapeHtml(report.location)}
+        <div class="report-detail-meta-grid">
+          <div><span>Date du signalement</span><strong>${escapeHtml(report.date)}</strong></div>
+          <div><span>Soutiens</span><strong>${report.supports} citoyen${report.supports > 1 ? 's' : ''}</strong></div>
         </div>
-        
         ${report.report ? `
-          <div class="inspection-report-box" style="margin-top:8px;">
-            <div class="inspection-header">
-              <span class="inspection-title-badge">${icon('file-text', 14)} Constat Technique d’Inspection</span>
-            </div>
-            <p style="font-size:12.5px; color:var(--text-main); margin-top:6px;">${escapeHtml(report.report)}</p>
+          <div class="inspection-report-box">
+            <div class="inspection-header"><span class="inspection-title-badge">${icon('clipboard-check', 14)} Constat technique</span></div>
+            <p>${escapeHtml(report.report)}</p>
           </div>
         ` : ''}
       </div>
@@ -1503,14 +1492,13 @@ function openReportDetailsModal(reportId) {
     buttons: `
       <button class="btn-default-outline" onclick="window.closeModal();">Fermer</button>
       <button class="btn-primary-green" data-action="toggle-support" data-id="${report.id}" onclick="window.closeModal();">
-        ${icon('users', 14)} Soutenir (${report.supports})
+        ${icon('users', 14)} ${report.supportedByUser ? 'Soutenu' : 'Soutenir'} (${report.supports})
       </button>
     `
   };
   render();
 }
 
-// ==========================================================================
 // GESTION DES ACTIONS ET ÉVÉNEMENTS GLOBAUX
 // ==========================================================================
 window.closeModal = function() {
