@@ -2723,3 +2723,89 @@ select:focus-visible {
     transition-duration: .01ms !important;
   }
 }
+
+/* ==========================================================================
+   CITIZEN DASHBOARD v2 — 30/09/2026
+   Refonte visuelle : lisibilité, hiérarchie, actions et responsive.
+   ========================================================================== */
+.citizen-dashboard-shell{display:flex;flex-direction:column;gap:18px;max-width:1500px;margin:0 auto}
+.citizen-welcome-hero{position:relative;min-height:235px;padding:30px 34px;overflow:hidden;border-radius:24px;background:linear-gradient(120deg,#062d20 0%,#075d3e 58%,#00875a 100%);color:#fff;display:flex;align-items:center;justify-content:space-between;box-shadow:0 16px 40px rgba(0,76,49,.18)}
+.citizen-welcome-hero:after{content:'';position:absolute;inset:auto -10% -70% 35%;height:240px;background:radial-gradient(circle,rgba(255,255,255,.12),transparent 65%);pointer-events:none}
+.citizen-welcome-content{position:relative;z-index:2;max-width:720px}
+.citizen-hero-eyebrow,.citizen-section-kicker{display:inline-flex;align-items:center;gap:6px;text-transform:uppercase;letter-spacing:.07em;font-size:10px;font-weight:800;color:var(--primary-green)}
+.citizen-welcome-hero .citizen-hero-eyebrow{color:rgba(255,255,255,.72);margin-bottom:8px}
+.citizen-welcome-content h2{font-size:30px;line-height:1.1;margin:0 0 10px;font-weight:800;letter-spacing:-.03em}
+.citizen-welcome-content p{max-width:650px;margin:0;color:rgba(255,255,255,.78);font-size:13.5px;line-height:1.65}
+.citizen-hero-buttons{display:flex;gap:9px;margin-top:20px}
+.citizen-hero-secondary{color:#fff!important;border-color:rgba(255,255,255,.35)!important;background:rgba(255,255,255,.06)!important}
+.citizen-hero-secondary:hover{background:rgba(255,255,255,.14)!important;color:#fff!important}
+.citizen-hero-visual{position:relative;width:210px;height:180px;flex:0 0 210px;opacity:.9}
+.citizen-hero-orbit{position:absolute;border:1px solid rgba(255,255,255,.14);border-radius:50%;inset:18px}
+.citizen-hero-orbit.orbit-two{inset:45px;border-color:rgba(255,255,255,.2)}
+.citizen-hero-pin{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:70px;height:70px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);backdrop-filter:blur(8px)}
+.citizen-kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.citizen-kpi-card{min-width:0;background:var(--bg-card);border:1px solid var(--border-color);border-radius:16px;padding:16px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow-sm)}
+.citizen-kpi-card>div:last-child{min-width:0;display:flex;flex-direction:column}
+.citizen-kpi-card span{font-size:11px;color:var(--text-muted);font-weight:700}
+.citizen-kpi-card strong{font-size:24px;line-height:1.1;color:var(--text-main);margin-top:3px}
+.citizen-kpi-card small{font-size:10px;color:var(--text-light);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.citizen-kpi-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:var(--primary-green-light);color:var(--primary-green);flex:0 0 auto}
+.citizen-kpi-icon.is-blue{background:rgba(37,99,235,.1);color:#2563eb}
+.citizen-kpi-icon.is-green{background:rgba(22,163,74,.1);color:#16a34a}
+.citizen-kpi-icon.is-orange{background:rgba(245,158,11,.12);color:#d97706}
+.citizen-action-card{margin:0!important;padding:17px 20px!important;border-radius:16px!important}
+.citizen-action-card .confirmation-alert-text{max-width:760px}
+.citizen-action-card .confirmation-alert-text strong{display:block;margin-top:3px}
+.citizen-action-buttons{display:flex;gap:8px;flex-wrap:wrap;flex:0 0 auto}
+.citizen-confirmed-card{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;background:var(--primary-green-light);border:1px solid var(--primary-green);border-radius:14px;color:var(--primary-green);font-size:12px;font-weight:800}
+.citizen-confirmed-card span{display:flex;align-items:center;gap:7px}
+.citizen-dashboard-grid{display:grid;grid-template-columns:minmax(0,2fr) minmax(300px,.92fr);gap:18px;align-items:start}
+.citizen-feed-panel{min-width:0}
+.citizen-section-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:12px}
+.citizen-section-heading h3{margin:4px 0 3px;font-size:17px;color:var(--text-main)}
+.citizen-section-heading p{margin:0;font-size:11.5px;color:var(--text-muted)}
+.citizen-search-bar{height:42px;margin-bottom:12px;padding:0 13px;border:1px solid var(--border-color);border-radius:12px;background:var(--bg-card);display:flex;align-items:center;gap:9px;color:var(--text-light)}
+.citizen-search-bar:focus-within{border-color:var(--primary-green);box-shadow:0 0 0 3px var(--primary-green-glow)}
+.citizen-search-bar input{width:100%;border:0;outline:0;background:transparent;color:var(--text-main);font-size:12px}
+.citizen-reports-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.citizen-report-card{cursor:pointer;background:var(--bg-card);border:1px solid var(--border-color);border-radius:15px;padding:10px;display:flex;gap:11px;transition:var(--transition);box-shadow:var(--shadow-sm)}
+.citizen-report-card:hover{border-color:rgba(0,135,90,.45);transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.citizen-report-card-head{display:flex;align-items:center;justify-content:space-between;gap:7px;margin-bottom:5px}
+.citizen-category-label{font-size:9.5px;text-transform:uppercase;letter-spacing:.04em;font-weight:800;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.citizen-report-card .status-tag{flex:0 0 auto}
+.citizen-report-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:9px;padding-top:8px;border-top:1px solid var(--border-color)}
+.citizen-report-date{font-size:10px;color:var(--text-light);font-weight:600}
+.citizen-side-column{display:flex;flex-direction:column;gap:12px;min-width:0}
+.citizen-tracking-widget{padding:17px!important}
+.citizen-link-button{border:0;background:none;color:var(--primary-green);font-size:11px;font-weight:800;cursor:pointer}
+.citizen-progress-summary{display:flex;align-items:center;gap:14px;margin:16px 0;padding:12px;border-radius:13px;background:var(--bg-app)}
+.citizen-progress-summary>div:last-child{display:flex;flex-direction:column;gap:3px}
+.citizen-progress-summary strong{font-size:12px;color:var(--text-main)}
+.citizen-progress-summary span{font-size:10px;color:var(--text-muted)}
+.citizen-progress-ring{width:58px;height:58px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:conic-gradient(var(--primary-green) 0deg,var(--primary-green) var(--progress,0deg),var(--border-color) var(--progress,0deg));position:relative;flex:0 0 auto}
+.citizen-progress-ring:after{content:'';position:absolute;inset:5px;background:var(--bg-app);border-radius:50%}
+.citizen-progress-ring strong,.citizen-progress-ring span{position:relative;z-index:1}
+.citizen-progress-ring strong{font-size:12px!important}
+.citizen-progress-ring span{font-size:8px}
+.citizen-tracking-widget .timeline-vertical-flow{gap:0}
+.citizen-tracking-widget .timeline-step-row{grid-template-columns:22px 1fr;padding:10px 0}
+.citizen-tracking-widget .timeline-step-row:before{left:10px}
+.citizen-tracking-widget .timeline-step-title{font-size:11px}
+.citizen-tracking-widget .timeline-step-time{font-size:10px;margin-top:2px}
+.citizen-full-button{width:100%;justify-content:center;margin-top:9px}
+.citizen-quick-actions{background:var(--bg-card);border:1px solid var(--border-color);border-radius:15px;padding:15px}
+.citizen-quick-actions button{width:100%;border:0;background:transparent;color:var(--text-main);display:grid;grid-template-columns:22px 1fr 16px;align-items:center;gap:8px;padding:11px 2px;text-align:left;cursor:pointer;border-radius:9px}
+.citizen-quick-actions button:hover{background:var(--bg-card-hover)}
+.citizen-quick-actions button+button{border-top:1px solid var(--border-color);border-radius:0}
+.citizen-quick-actions button>svg:first-child{color:var(--primary-green)}
+.citizen-quick-actions button>svg:last-child{color:var(--text-light)}
+.citizen-quick-actions button span{display:flex;flex-direction:column;gap:2px}
+.citizen-quick-actions button strong{font-size:11.5px}
+.citizen-quick-actions button small{font-size:10px;color:var(--text-muted)}
+.citizen-empty-state{grid-column:1/-1;min-height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;border:1px dashed var(--border-color);border-radius:14px;color:var(--text-muted);background:var(--bg-card)}
+.citizen-empty-state strong{font-size:13px;color:var(--text-main)}
+.citizen-empty-state p{margin:0;font-size:11px}
+
+@media (max-width:1200px){.citizen-dashboard-grid{grid-template-columns:minmax(0,1fr)}.citizen-side-column{display:grid;grid-template-columns:1fr 1fr}.citizen-kpi-grid{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:700px){.citizen-welcome-hero{min-height:0;padding:22px 18px}.citizen-welcome-content h2{font-size:23px}.citizen-welcome-content p{font-size:12px}.citizen-hero-visual{display:none}.citizen-hero-buttons{flex-direction:column}.citizen-hero-buttons>*{width:100%;justify-content:center}.citizen-kpi-grid{grid-template-columns:1fr 1fr}.citizen-kpi-card{padding:12px}.citizen-kpi-icon{width:36px;height:36px}.citizen-kpi-card strong{font-size:20px}.citizen-kpi-card small{display:none}.citizen-section-heading{align-items:flex-start;flex-direction:column}.citizen-section-heading>button{width:100%;justify-content:center}.citizen-reports-grid{grid-template-columns:1fr}.citizen-side-column{display:flex}.citizen-action-card{flex-direction:column}.citizen-action-buttons{width:100%}.citizen-action-buttons>*{flex:1}.citizen-report-card{padding:10px}.citizen-report-card .report-thumb-img{width:68px;height:68px}}
+@media (max-width:420px){.citizen-kpi-grid{grid-template-columns:1fr}.citizen-kpi-card{min-height:62px}.citizen-welcome-hero{border-radius:17px}.citizen-welcome-content h2{font-size:21px}.citizen-confirmed-card{align-items:flex-start;flex-direction:column}.citizen-action-buttons{flex-direction:column}.citizen-action-buttons>*{width:100%;justify-content:center}}
