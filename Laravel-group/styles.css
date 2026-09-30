@@ -3566,3 +3566,13 @@ select:focus-visible {
 .citizen-reports-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
 @media(max-width:1000px){.citizen-reports-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:680px){.app-content-scroll{padding-left:12px;padding-right:12px}.citizen-reports-grid{grid-template-columns:1fr}}
+
+/* Catalogue citoyen — alignement stable des actions */
+.citizen-report-card .report-card-info{height:100%;min-height:0}
+.citizen-report-card .report-title-text{min-height:39px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+.citizen-report-card .report-loc-time{min-height:30px}
+.citizen-report-card .citizen-report-footer{margin-top:auto;min-height:30px;flex-wrap:nowrap}
+.citizen-report-card .citizen-report-open{margin-left:auto;display:inline-flex;align-items:center;justify-content:center;gap:4px;min-height:28px;padding:0 2px;line-height:1;flex:0 0 auto}
+.citizen-report-card .btn-support-issue{flex:0 0 auto}
+@media(max-width:1000px){.citizen-report-card .citizen-report-open{font-size:9px}}
+@media(max-width:680px){.citizen-report-card .citizen-report-open{font-size:9.5px}}
