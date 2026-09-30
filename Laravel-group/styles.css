@@ -3666,3 +3666,9 @@ select:focus-visible {
 .report-detail-meta-grid span{display:block;color:var(--text-light);font-size:9px;font-weight:700}
 .report-detail-meta-grid strong{display:block;margin-top:4px;color:var(--text-main);font-size:11px}
 @media(max-width:560px){.report-detail-modal-image{height:160px}.report-detail-modal-status{align-items:flex-start;flex-direction:column}.report-detail-priority{text-align:left}.report-detail-meta-grid{grid-template-columns:1fr}.citizen-report-card .citizen-report-open{padding:0 8px}}
+
+/* Catalogue citoyen — positionnement uniforme du bouton détail */
+.citizen-report-card .report-card-info{flex:1 1 auto;height:auto;display:flex;flex-direction:column;min-width:0}
+.citizen-report-card .citizen-report-footer{width:100%;margin-top:auto;padding-top:10px;min-height:32px;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.citizen-report-card .btn-support-issue{margin:0;flex:0 0 auto}
+.citizen-report-card .citizen-report-open{margin:0 0 0 auto;flex:0 0 auto;align-self:center;height:30px;min-height:30px;line-height:1}
