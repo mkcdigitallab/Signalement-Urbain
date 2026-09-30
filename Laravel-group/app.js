@@ -718,35 +718,6 @@ function citizenDashboardView() {
           </div>
         </section>
 
-        <aside class="citizen-side-column">
-          <section class="dashboard-card-widget citizen-my-reports-widget ${state.myReportsExpanded ? 'is-expanded' : ''}" data-action="toggle-my-reports">
-            <button class="citizen-my-reports-summary" type="button" aria-expanded="${state.myReportsExpanded}">
-              <span class="citizen-my-reports-summary-icon">${icon('clipboard-list',17)}</span>
-              <span class="citizen-my-reports-summary-text"><strong>Mes signalements</strong><small>${myReports.length} dossier${myReports.length > 1 ? 's' : ''} · ${myActive.length} en cours · ${myResolved.length} résolu${myResolved.length > 1 ? 's' : ''}</small></span>
-              <span class="citizen-my-reports-summary-arrow">${icon(state.myReportsExpanded ? 'chevron-up' : 'chevron-down',16)}</span>
-            </button>
-            <div class="citizen-my-reports-details">
-              <div class="citizen-widget-intro">Ouvrez un dossier pour consulter son suivi détaillé.</div>
-              <div class="citizen-my-reports-list">
-                ${myReports.length ? myReports.map(report => {
-                  const progress = statusProgress[report.status] || 0;
-                  return `
-                    <article class="citizen-my-report-item">
-                      <div class="citizen-my-report-top">
-                        <div><span class="citizen-my-report-id">${escapeHtml(report.id)}</span><h4>${escapeHtml(report.title)}</h4></div>
-                        <span class="status-tag ${statusClasses[report.status]}">${statusLabels[report.status]}</span>
-                      </div>
-                      <div class="citizen-my-report-meta">${icon('map-pin',11)} ${escapeHtml(report.location)} <span>·</span> ${report.date}</div>
-                      <div class="citizen-mini-progress" aria-label="Progression du signalement à ${progress}%"><span style="width:${progress}%"></span></div>
-                      <button class="btn-default-outline citizen-track-button" data-action="open-detail" data-id="${report.id}">${icon('route',14)} Voir le suivi</button>
-                    </article>`;
-                }).join('') : `<div class="citizen-empty-state">${icon('file-x',26)}<strong>Vous n'avez encore aucun signalement</strong><p>Créez votre premier signalement pour suivre son traitement ici.</p></div>`}
-              </div>
-            </div>
-          </section>
-
-          <section class="citizen-quick-actions"><div class="citizen-section-kicker">${icon('zap',14)} Accès rapide</div><button data-action="navigate" data-view="lost-items">${icon('search',17)}<span><strong>Objets trouvés</strong><small>Consulter les objets et CNI retrouvés</small></span>${icon('chevron-right',16)}</button><button data-action="navigate" data-view="my-reports">${icon('clipboard-list',17)}<span><strong>Mes dossiers</strong><small>Historique de vos signalements</small></span>${icon('chevron-right',16)}</button></section>
-        </aside>
       </div>
     </section>
   `;
