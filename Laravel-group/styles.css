@@ -3004,26 +3004,43 @@ select:focus-visible {
 }
 .citizen-report-card .report-card-info{
   min-width:0;
-  padding:10px 13px 11px;
+  padding:12px 14px 13px;
   display:flex;
   flex-direction:column;
-  justify-content:flex-start;
+  gap:0;
 }
 .citizen-report-card .citizen-category-label{
-  margin-bottom:3px;
-  font-size:8.5px;
+  margin:0 0 4px;
+  font-size:9px;
+  font-weight:800;
 }
 .citizen-report-card .report-title-text{
-  margin:0 0 5px;
-  font-size:13.5px;
-  line-height:1.25;
+  margin:0 0 6px;
+  font-size:14px;
+  line-height:1.3;
+  font-weight:800;
+  color:var(--text-main);
 }
 .citizen-report-card .report-loc-time{
-  font-size:10px;
+  display:flex;
+  align-items:center;
+  gap:5px;
+  margin:0;
+  font-size:10.5px;
+  color:var(--text-muted);
 }
 .citizen-report-card .citizen-report-footer{
-  margin-top:8px;
-  padding-top:7px;
+  margin-top:9px;
+  padding-top:8px;
+  border-top:1px solid var(--border-color);
+}
+.citizen-report-card .btn-support-issue{
+  min-height:28px;
+  font-size:9.5px;
+}
+.citizen-report-card .citizen-report-open{
+  font-size:9.5px;
+  font-weight:800;
 }
 
 /* Mes signalements : compact, indépendant du catalogue */
