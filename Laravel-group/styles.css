@@ -3576,3 +3576,72 @@ select:focus-visible {
 .citizen-report-card .btn-support-issue{flex:0 0 auto}
 @media(max-width:1000px){.citizen-report-card .citizen-report-open{font-size:9px}}
 @media(max-width:680px){.citizen-report-card .citizen-report-open{font-size:9.5px}}
+
+/* Page Mes signalements — suivi citoyen */
+.my-reports-page{width:100%;max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+.my-reports-page-header{display:flex;justify-content:space-between;align-items:flex-end;gap:20px}
+.my-reports-kicker{display:inline-flex;align-items:center;gap:5px;color:var(--primary-green);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em}
+.my-reports-page-header h2{margin:4px 0 3px;font-size:24px;font-weight:850;color:var(--text-main);letter-spacing:-.02em}
+.my-reports-page-header p{margin:0;color:var(--text-muted);font-size:12px}
+.my-reports-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.my-reports-summary>div{background:var(--bg-card);border:1px solid var(--border-color);border-radius:14px;padding:14px 16px;box-shadow:var(--shadow-sm)}
+.my-reports-summary span{display:block;color:var(--text-muted);font-size:10px;font-weight:700}
+.my-reports-summary strong{display:block;margin-top:4px;color:var(--text-main);font-size:21px;line-height:1}
+.my-reports-list{display:flex;flex-direction:column;gap:14px}
+.my-report-card{background:var(--bg-card);border:1px solid var(--border-color);border-radius:16px;overflow:hidden;box-shadow:var(--shadow-sm);transition:border-color .2s,box-shadow .2s}
+.my-report-card:hover{border-color:rgba(0,135,90,.35);box-shadow:var(--shadow-md)}
+.my-report-card-top{display:grid;grid-template-columns:190px minmax(0,1fr) auto;gap:18px;padding:16px}
+.my-report-image{position:relative;height:126px;border-radius:11px;overflow:hidden;background:var(--bg-app)}
+.my-report-image img{width:100%;height:100%;object-fit:cover;display:block}
+.my-report-image .status-tag{position:absolute;left:9px;top:9px}
+.my-report-main{min-width:0;padding:3px 0}
+.my-report-meta{display:flex;gap:8px;align-items:center;color:var(--primary-green);font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.05em}
+.my-report-meta span+span{padding-left:8px;border-left:1px solid var(--border-color)}
+.my-report-main h3{margin:7px 0 8px;font-size:17px;line-height:1.3;color:var(--text-main)}
+.my-report-location,.my-report-date{display:flex;align-items:center;gap:5px;color:var(--text-muted);font-size:10.5px;line-height:1.4}
+.my-report-date{margin-top:5px;color:var(--text-light)}
+.my-report-location svg{color:var(--primary-green);flex:0 0 auto}
+.my-report-detail-btn{align-self:center;display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:34px;padding:0 11px;border:1px solid var(--border-color);border-radius:9px;background:var(--bg-card);color:var(--text-main);font-size:10px;font-weight:800;white-space:nowrap;cursor:pointer}
+.my-report-detail-btn:hover{border-color:var(--primary-green);color:var(--primary-green)}
+.my-report-progress{margin:0 16px;padding:13px 0 14px;border-top:1px solid var(--border-color)}
+.my-report-progress-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
+.my-report-progress-head>div{display:flex;flex-direction:column;gap:3px}
+.my-report-section-label{display:flex;align-items:center;gap:5px;color:var(--primary-green);font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.05em}
+.my-report-progress-head strong{font-size:11px;color:var(--text-main)}
+.my-report-progress-value{font-size:10px;font-weight:900;color:var(--primary-green)}
+.my-report-progress-bar{height:5px;margin-top:9px;background:var(--border-color);border-radius:999px;overflow:hidden}
+.my-report-progress-bar span{display:block;height:100%;background:var(--primary-green);border-radius:inherit}
+.my-report-steps{display:grid;grid-template-columns:repeat(5,1fr);margin-top:9px}
+.my-report-step{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--text-light);font-size:8.5px;font-weight:700;text-align:center}
+.my-report-step:before{content:'';position:absolute;top:7px;left:0;width:100%;height:1px;background:var(--border-color);z-index:0}
+.my-report-step:first-child:before{left:50%;width:50%}
+.my-report-step:last-child:before{width:50%}
+.my-report-step-dot{position:relative;z-index:1;width:15px;height:15px;border-radius:50%;display:grid;place-items:center;background:var(--bg-card);border:2px solid var(--border-color)}
+.my-report-step.is-done{color:var(--primary-green)}
+.my-report-step.is-done:before{background:var(--primary-green)}
+.my-report-step.is-done .my-report-step-dot{background:var(--primary-green);border-color:var(--primary-green);color:#fff}
+.my-report-card-footer{display:flex;align-items:center;gap:16px;padding:10px 16px;border-top:1px solid var(--border-color);background:var(--bg-app);color:var(--text-muted);font-size:9.5px;font-weight:700}
+.my-report-card-footer span{display:inline-flex;align-items:center;gap:5px}
+.my-report-card-footer svg{color:var(--primary-green)}
+.my-report-mobile-detail{display:none;margin-left:auto;border:0;background:none;color:var(--primary-green);font-size:9.5px;font-weight:800;cursor:pointer}
+.my-reports-empty{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;padding:50px 20px;background:var(--bg-card);border:1px dashed var(--border-color);border-radius:16px;color:var(--text-muted);text-align:center}
+.my-reports-empty strong{color:var(--text-main);font-size:14px}
+.my-reports-empty span{font-size:11px}
+.my-reports-empty button{margin-top:8px}
+@media(max-width:800px){
+  .my-reports-page-header{align-items:flex-start;flex-direction:column}
+  .my-reports-summary{grid-template-columns:repeat(2,1fr)}
+  .my-report-card-top{grid-template-columns:130px minmax(0,1fr);gap:14px}
+  .my-report-image{height:105px}
+  .my-report-detail-btn{display:none}
+  .my-report-mobile-detail{display:inline-flex;align-items:center;gap:3px}
+}
+@media(max-width:560px){
+  .my-reports-summary{grid-template-columns:repeat(2,1fr)}
+  .my-report-card-top{grid-template-columns:1fr;padding:12px;gap:10px}
+  .my-report-image{height:160px}
+  .my-report-main h3{font-size:15px}
+  .my-report-progress{margin:0 12px}
+  .my-report-steps{font-size:7.5px}
+  .my-report-card-footer{padding:9px 12px;gap:10px;flex-wrap:wrap}
+}
