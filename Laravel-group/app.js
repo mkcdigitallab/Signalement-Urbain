@@ -701,7 +701,7 @@ function citizenDashboardView() {
           <div class="citizen-reports-grid">
             ${filteredReports.length ? filteredReports.map(report => `
               <article class="citizen-report-card">
-                <div class="citizen-report-image-wrap">
+                <div class="citizen-report-image-wrap" data-action="open-detail" data-id="${report.id}" role="button" tabindex="0" aria-label="Voir le détail du signalement ${escapeHtml(report.title)}">
                   <img class="report-thumb-img" src="${report.photo || 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=800&q=80'}" alt="${escapeHtml(report.title)}">
                   <span class="citizen-report-card-status status-tag ${statusClasses[report.status]}">${statusLabels[report.status]}</span>
                 </div>
@@ -711,7 +711,6 @@ function citizenDashboardView() {
                   <div class="report-loc-time">${icon('map-pin',12)}<span>${escapeHtml(report.location)}</span></div>
                   <div class="citizen-report-footer">
                     <button class="btn-support-issue ${report.supportedByUser?'supported':''}" data-action="toggle-support" data-id="${report.id}" onclick="event.stopPropagation();">${icon('users',13)}<span>${report.supportedByUser?'Soutenu':'Moi aussi'}</span><span class="support-badge-count">${report.supports}</span></button>
-                    <button class="citizen-report-open" data-action="open-detail" data-id="${report.id}">${icon('eye',13)} Voir le signalement</button>
                   </div>
                 </div>
               </article>`).join('') : `<div class="citizen-empty-state">${icon('search-x',28)}<strong>Aucun signalement trouvé</strong><p>Essayez un autre mot-clé ou changez de région.</p></div>`}
