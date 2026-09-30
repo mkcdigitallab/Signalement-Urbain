@@ -3673,3 +3673,50 @@ select:focus-visible {
 .citizen-report-image-wrap[data-action="open-detail"] .report-thumb-img{transition:transform .2s ease}
 .citizen-report-image-wrap[data-action="open-detail"]:hover .report-thumb-img{transform:scale(1.025)}
 .citizen-report-image-wrap[data-action="open-detail"]:focus-visible{outline:2px solid var(--primary-green);outline-offset:2px}
+
+
+/* Objets perdus & CNI — catalogue cohérent avec l'espace citoyen */
+.lost-items-page{display:flex;flex-direction:column;gap:18px;max-width:1400px;margin:0 auto}
+.lost-items-hero{display:flex;justify-content:space-between;align-items:center;gap:24px;padding:22px 24px;background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-xl);box-shadow:var(--shadow-sm)}
+.lost-items-hero h2{margin:5px 0 4px;font-size:24px;color:var(--text-main);letter-spacing:-.02em}
+.lost-items-hero p{max-width:720px;margin:0;color:var(--text-muted);font-size:12.5px;line-height:1.5}
+.lost-items-hero-count{min-width:82px;text-align:center;padding:12px 16px;border-radius:14px;background:var(--primary-green-light);color:var(--primary-green)}
+.lost-items-hero-count strong{display:block;font-size:24px;line-height:1}
+.lost-items-hero-count span{font-size:9px;font-weight:800;text-transform:uppercase}
+.lost-items-filters{padding:18px}
+.lost-items-filter-heading{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:14px}
+.lost-items-filter-heading strong{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-main)}
+.lost-items-filter-heading strong svg{color:var(--primary-green)}
+.lost-items-filter-heading span{display:block;margin-top:3px;font-size:10.5px;color:var(--text-muted)}
+.lost-items-filters .objets-search-inputs{align-items:end}
+.lost-filter-field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.lost-filter-field>span{font-size:9px;font-weight:800;color:var(--text-light);text-transform:uppercase;letter-spacing:.04em}
+.lost-filter-field .auth-input,.lost-filter-field .auth-select{width:100%;box-sizing:border-box}
+.lost-reset-button{height:40px;justify-content:center}
+.lost-items-results{display:flex;flex-direction:column;gap:12px}
+.lost-items-section-heading{display:flex;justify-content:space-between;align-items:end;gap:12px}
+.lost-items-section-heading h3{margin:3px 0 0;font-size:17px;color:var(--text-main)}
+.lost-items-section-heading>span{font-size:10px;font-weight:800;color:var(--text-muted)}
+.lost-items-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:stretch}
+.lost-item-card{display:flex;flex-direction:column;min-width:0;overflow:hidden;background:var(--bg-card);border:1px solid var(--border-color);border-radius:15px;box-shadow:var(--shadow-sm);transition:transform .18s ease,box-shadow .18s ease}
+.lost-item-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.lost-item-image{position:relative;height:175px;overflow:hidden;background:var(--bg-app);cursor:pointer}
+.lost-item-image img{width:100%;height:100%;display:block;object-fit:cover;transition:transform .2s ease}
+.lost-item-image:hover img{transform:scale(1.025)}
+.lost-item-image .status-tag{position:absolute;top:10px;right:10px;box-shadow:var(--shadow-sm)}
+.lost-item-image-hint{position:absolute;left:10px;bottom:10px;display:inline-flex;align-items:center;gap:5px;padding:6px 8px;border-radius:8px;background:rgba(0,0,0,.65);color:#fff;font-size:9px;font-weight:800;opacity:0;transition:opacity .18s ease}
+.lost-item-image:hover .lost-item-image-hint,.lost-item-image:focus-visible .lost-item-image-hint{opacity:1}
+.lost-item-image:focus-visible{outline:2px solid var(--primary-green);outline-offset:-2px}
+.lost-item-body{display:flex;flex-direction:column;gap:9px;flex:1;padding:14px}
+.lost-item-meta{display:flex;justify-content:space-between;gap:10px;color:var(--text-light);font-size:9px;font-weight:800}
+.lost-item-meta span:first-child{color:var(--primary-green)}
+.lost-item-body h4{margin:0;font-size:14px;line-height:1.35;color:var(--text-main)}
+.lost-item-description{margin:0;color:var(--text-muted);font-size:11px;line-height:1.5;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
+.lost-item-location{display:flex;align-items:flex-start;gap:6px;color:var(--text-muted);font-size:10.5px;line-height:1.4}
+.lost-item-location svg{flex:0 0 auto;color:var(--primary-green);margin-top:1px}
+.lost-item-card .poste-depot-card{margin-top:2px}
+.lost-item-action{width:100%;margin-top:auto;justify-content:center;min-height:36px}
+.lost-items-empty{grid-column:1/-1}
+@media(max-width:1000px){.lost-items-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){.lost-items-hero{align-items:flex-start;flex-direction:column}.lost-items-hero-count{align-self:flex-start}.lost-items-filter-heading{align-items:flex-start;flex-direction:column}.lost-items-grid{grid-template-columns:1fr}}
+@media(max-width:560px){.lost-items-page{gap:14px}.lost-items-hero{padding:18px}.lost-items-hero h2{font-size:20px}.lost-items-filters{padding:14px}.lost-items-section-heading{align-items:flex-start;flex-direction:column}.lost-item-image{height:190px}}
