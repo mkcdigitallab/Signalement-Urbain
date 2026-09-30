@@ -649,97 +649,137 @@ function mainContentView() {
 // DASHBOARD CITOYEN
 // ==========================================================================
 function citizenDashboardView() {
-  const myReports = state.reports.filter(r => r.author === 'Awa Diop');
-  const myActive = myReports.filter(r => !['resolved','rejected'].includes(r.status));
+  const myReports = state.reports.filter(r => r.author === roles[state.role]?.name);
+  const myActive = myReports.filter(r => !['resolved', 'rejected'].includes(r.status));
   const myResolved = myReports.filter(r => r.status === 'resolved');
-  const mySupports = state.reports.filter(r => r.supportedByUser).length;
   const filteredReports = state.reports
     .filter(r => r.region === state.region)
     .filter(r => `${r.title} ${r.category} ${r.location}`.toLowerCase().includes(state.query.toLowerCase()))
-    .slice(0, 6);
+    .slice(0, 4);
 
-  const statusProgress = { received: 25, assigned: 45, inspection: 65, awaiting: 78, progress: 88, resolved: 100, rejected: 100 };
+  const statusProgress = { received: 20, assigned: 40, inspection: 60, awaiting: 72, progress: 88, resolved: 100, rejected: 100 };
   const trackingSteps = ['received', 'assigned', 'inspection', 'progress', 'resolved'];
 
   return `
-    <section class="citizen-dashboard-shell">
-      <div class="citizen-welcome-hero">
-        <div class="citizen-welcome-content">
-          <span class="citizen-hero-eyebrow">${icon('map-pin',13)} Dakar · ${escapeHtml(state.region)}</span>
-          <h2>Dalal ak jàmm, Awa 👋</h2>
-          <p>Votre espace citoyen pour signaler un problème, suivre vos dossiers et voir ce qui change dans votre quartier.</p>
-          <div class="citizen-hero-buttons">
-            <button class="btn-primary-green" data-action="navigate" data-view="new-report">${icon('plus-circle',16)} Faire un signalement</button>
-            <button class="btn-default-outline citizen-hero-secondary" data-action="navigate" data-view="my-reports">${icon('file-text',16)} Voir mes signalements</button>
-          </div>
+    <section class="citizen-dashboard-v3">
+      <header class="citizen-dashboard-header-v3">
+        <div>
+          <span class="citizen-section-kicker">${icon('map-pin', 13)} ${escapeHtml(state.region)}</span>
+          <h2>Bonjour Awa, voici vos dossiers.</h2>
+          <p>Retrouvez l'état de vos signalements au même endroit, puis découvrez les problèmes signalés autour de vous.</p>
         </div>
-        <div class="citizen-hero-visual" aria-hidden="true"><div class="citizen-hero-orbit orbit-one"></div><div class="citizen-hero-orbit orbit-two"></div><div class="citizen-hero-pin">${icon('map-pin',32)}</div></div>
+        <button class="btn-primary-green" data-action="navigate" data-view="new-report">
+          ${icon('plus', 16)} Nouveau signalement
+        </button>
+      </header>
+
+      <div class="citizen-summary-v3">
+        <div><strong>${myReports.length}</strong><span>signalements</span></div>
+        <div><strong>${myActive.length}</strong><span>en cours</span></div>
+        <div><strong>${myResolved.length}</strong><span>résolus</span></div>
+        <div class="citizen-summary-note">
+          ${icon('activity', 15)}
+          <span>Chaque dossier a son propre suivi.</span>
+        </div>
       </div>
 
-      <section class="citizen-kpi-grid" aria-label="Résumé de votre activité">
-        <div class="citizen-kpi-card"><div class="citizen-kpi-icon">${icon('file-text',19)}</div><div><span>Mes signalements</span><strong>${myReports.length}</strong><small>déposés par vous</small></div></div>
-        <div class="citizen-kpi-card"><div class="citizen-kpi-icon is-blue">${icon('activity',19)}</div><div><span>En cours</span><strong>${myActive.length}</strong><small>à suivre</small></div></div>
-        <div class="citizen-kpi-card"><div class="citizen-kpi-icon is-green">${icon('check-circle-2',19)}</div><div><span>Résolus</span><strong>${myResolved.length}</strong><small>dossiers clôturés</small></div></div>
-        <div class="citizen-kpi-card"><div class="citizen-kpi-icon is-orange">${icon('heart',19)}</div><div><span>Mes soutiens</span><strong>${mySupports}</strong><small>problèmes soutenus</small></div></div>
-      </section>
-
-      ${!state.confirmedResolved ? `
-        <section class="confirmation-alert-card citizen-action-card">
-          <div class="confirmation-alert-text"><span class="citizen-section-kicker">${icon('check-circle',14)} Action attendue</span><strong>Confirmez une intervention terminée</strong><p>La mairie indique que le signalement « Branches d’acacia menaçant de rompre » est résolu sur l’Avenue Malick Sy. Votre confirmation permet de clôturer le dossier côté citoyen.</p></div>
-          <div class="citizen-action-buttons"><button class="btn-primary-green" data-action="confirm-resolution">${icon('check',14)} Confirmer</button><button class="btn-default-outline" data-action="contest-resolution">${icon('x',14)} Le problème persiste</button></div>
-        </section>
-      ` : `<section class="citizen-confirmed-card"><span>${icon('check-circle',18)} Confirmation enregistrée</span><button class="btn-default-outline" data-action="undo-confirmation">Annuler</button></section>`}
-
-      <div class="citizen-dashboard-grid">
-        <section class="citizen-feed-panel">
-          <div class="citizen-section-heading"><div><span class="citizen-section-kicker">${icon('radio',14)} Vie du quartier</span><h3>Signalements récents à ${escapeHtml(state.region)}</h3><p>Consultez les problèmes remontés autour de vous et soutenez ceux qui vous concernent.</p></div><button class="btn-default-outline" data-action="navigate" data-view="new-report">${icon('plus',14)} Signaler</button></div>
-          <div class="citizen-search-bar">${icon('search',16)}<input type="search" aria-label="Rechercher un signalement" placeholder="Rechercher un problème, une rue, une catégorie…" value="${escapeHtml(state.query)}" data-action="citizen-search"></div>
-          <div class="citizen-reports-grid">
-            ${filteredReports.length ? filteredReports.map(report => `
-              <article class="citizen-report-card" data-action="open-detail" data-id="${report.id}">
-                <img class="report-thumb-img" src="${report.photo || 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=160&q=75'}" alt="${escapeHtml(report.title)}">
-                <div class="report-card-info">
-                  <div class="citizen-report-card-head"><span class="citizen-category-label">${escapeHtml(report.category)}</span><span class="status-tag ${statusClasses[report.status]}">${statusLabels[report.status]}</span></div>
-                  <h4 class="report-title-text">${escapeHtml(report.title)}</h4>
-                  <div class="report-loc-time">${icon('map-pin',12)}<span>${escapeHtml(report.location)}</span></div>
-                  <div class="citizen-report-footer"><button class="btn-support-issue ${report.supportedByUser?'supported':''}" data-action="toggle-support" data-id="${report.id}" onclick="event.stopPropagation();">${icon('users',13)}<span>${report.supportedByUser?'Soutenu':'Moi aussi'}</span><span class="support-badge-count">${report.supports}</span></button><span class="citizen-report-date">${report.date}</span></div>
-                </div>
-              </article>`).join('') : `<div class="citizen-empty-state">${icon('search-x',28)}<strong>Aucun signalement trouvé</strong><p>Essayez un autre mot-clé ou changez de région.</p></div>`}
+      <div class="citizen-dashboard-main-v3">
+        <section class="citizen-primary-panel-v3">
+          <div class="citizen-panel-heading-v3">
+            <div>
+              <span class="citizen-section-kicker">${icon('clipboard-list', 14)} Mes signalements</span>
+              <h3>Vos dossiers</h3>
+            </div>
+            <button class="btn-default-outline" data-action="navigate" data-view="my-reports">Historique</button>
           </div>
-        </section>
 
-        <aside class="citizen-side-column">
-          <section class="dashboard-card-widget citizen-my-reports-widget">
-            <div class="widget-header-title"><span>${icon('clipboard-list',16)} Mes signalements</span><button class="citizen-link-button" data-action="navigate" data-view="my-reports">Tout voir</button></div>
-            <p class="citizen-widget-intro">Chaque dossier possède son propre suivi. Ouvrez un signalement pour voir exactement où il en est.</p>
-            <div class="citizen-my-reports-list">
-              ${myReports.length ? myReports.map(report => {
-                const progress = statusProgress[report.status] || 0;
-                const currentIndex = trackingSteps.indexOf(report.status);
-                return `
-                  <article class="citizen-my-report-item">
-                    <div class="citizen-my-report-top">
-                      <div><span class="citizen-my-report-id">${escapeHtml(report.id)}</span><h4>${escapeHtml(report.title)}</h4></div>
+          <div class="citizen-my-reports-v3">
+            ${myReports.length ? myReports.map(report => {
+              const progress = statusProgress[report.status] || 0;
+              const currentIndex = trackingSteps.indexOf(report.status);
+              return `
+                <article class="citizen-report-row-v3" data-action="open-detail" data-id="${report.id}">
+                  <div class="citizen-report-row-icon">${icon(report.status === 'resolved' ? 'check-circle-2' : 'file-clock', 19)}</div>
+                  <div class="citizen-report-row-body">
+                    <div class="citizen-report-row-top">
+                      <div>
+                        <span class="citizen-my-report-id">${escapeHtml(report.id)}</span>
+                        <h4>${escapeHtml(report.title)}</h4>
+                      </div>
                       <span class="status-tag ${statusClasses[report.status]}">${statusLabels[report.status]}</span>
                     </div>
-                    <div class="citizen-my-report-meta">${icon('map-pin',11)} ${escapeHtml(report.location)} <span>·</span> ${report.date}</div>
-                    <div class="citizen-mini-progress" aria-label="Progression du signalement à ${progress}%"><span style="width:${progress}%"></span></div>
-                    <div class="citizen-mini-steps">
-                      ${trackingSteps.map((step, index) => `<span class="${currentIndex >= index ? 'done' : ''}">${icon(currentIndex >= index ? 'check' : 'circle',9)} ${step === 'received' ? 'Reçu' : step === 'assigned' ? 'Affecté' : step === 'inspection' ? 'Inspecté' : step === 'progress' ? 'Intervention' : 'Résolu'}</span>`).join('')}
+                    <div class="citizen-report-row-meta">
+                      <span>${icon('map-pin', 11)} ${escapeHtml(report.location)}</span>
+                      <span>${icon('calendar-days', 11)} ${report.date}</span>
                     </div>
-                    <button class="btn-default-outline citizen-track-button" data-action="open-detail" data-id="${report.id}">${icon('route',14)} Voir le suivi de ce signalement</button>
-                  </article>`;
-              }).join('') : `<div class="citizen-empty-state">${icon('file-x',26)}<strong>Vous n'avez encore aucun signalement</strong><p>Créez votre premier signalement pour suivre son traitement ici.</p></div>`}
-            </div>
-          </section>
+                    <div class="citizen-report-progress-v3">
+                      <div><span>Avancement</span><strong>${progress}%</strong></div>
+                      <div class="citizen-progress-track-v3"><span style="width:${progress}%"></span></div>
+                    </div>
+                    <div class="citizen-report-row-footer">
+                      <div class="citizen-mini-steps">
+                        ${trackingSteps.map((step, index) => `<span class="${currentIndex >= index ? 'done' : ''}">${icon(currentIndex >= index ? 'check' : 'circle', 9)} ${step === 'received' ? 'Reçu' : step === 'assigned' ? 'Affecté' : step === 'inspection' ? 'Inspecté' : step === 'progress' ? 'Intervention' : 'Résolu'}</span>`).join('')}
+                      </div>
+                      <button class="citizen-track-button-v3" data-action="open-detail" data-id="${report.id}" onclick="event.stopPropagation();">
+                        Voir le suivi ${icon('arrow-right', 13)}
+                      </button>
+                    </div>
+                  </div>
+                </article>`;
+            }).join('') : `
+              <div class="citizen-empty-state">
+                ${icon('file-plus-2', 28)}
+                <strong>Aucun signalement pour le moment</strong>
+                <p>Votre prochain signalement apparaîtra ici avec son suivi.</p>
+                <button class="btn-primary-green" data-action="navigate" data-view="new-report">${icon('plus', 14)} Faire un signalement</button>
+              </div>
+            `}
+          </div>
 
-          <section class="citizen-quick-actions"><div class="citizen-section-kicker">${icon('zap',14)} Accès rapide</div><button data-action="navigate" data-view="lost-items">${icon('search',17)}<span><strong>Objets trouvés</strong><small>Consulter les objets et CNI retrouvés</small></span>${icon('chevron-right',16)}</button><button data-action="navigate" data-view="my-reports">${icon('clipboard-list',17)}<span><strong>Mes dossiers</strong><small>Historique de vos signalements</small></span>${icon('chevron-right',16)}</button></section>
+          ${!state.confirmedResolved && myReports.some(r => r.status === 'resolved') ? `
+            <div class="citizen-attention-v3">
+              ${icon('check-circle', 18)}
+              <div><strong>Une intervention attend votre confirmation</strong><span>Le dossier « Branches d’acacia menaçant de rompre » a été marqué comme résolu.</span></div>
+              <button class="btn-default-outline" data-action="confirm-resolution">Confirmer</button>
+            </div>
+          ` : ''}
+        </section>
+
+        <aside class="citizen-secondary-panel-v3">
+          <div class="citizen-panel-heading-v3">
+            <div>
+              <span class="citizen-section-kicker">${icon('radar', 14)} À proximité</span>
+              <h3>Vie du quartier</h3>
+            </div>
+          </div>
+          <div class="citizen-search-bar citizen-search-v3">
+            ${icon('search', 15)}
+            <input type="search" aria-label="Rechercher un signalement" placeholder="Rue, problème, catégorie…" value="${escapeHtml(state.query)}" data-action="citizen-search">
+          </div>
+          <div class="citizen-nearby-list-v3">
+            ${filteredReports.length ? filteredReports.map(report => `
+              <article class="citizen-nearby-item-v3" data-action="open-detail" data-id="${report.id}">
+                <div class="citizen-nearby-status-v3 ${statusClasses[report.status]}"></div>
+                <div>
+                  <span>${escapeHtml(report.category)}</span>
+                  <h4>${escapeHtml(report.title)}</h4>
+                  <small>${escapeHtml(report.location)}</small>
+                  <div class="citizen-nearby-footer-v3">
+                    <button class="btn-support-issue ${report.supportedByUser ? 'supported' : ''}" data-action="toggle-support" data-id="${report.id}" onclick="event.stopPropagation();">
+                      ${icon('users', 12)} ${report.supportedByUser ? 'Soutenu' : 'Moi aussi'} · ${report.supports}
+                    </button>
+                    <time>${report.date}</time>
+                  </div>
+                </div>
+              </article>
+            `).join('') : `<div class="citizen-empty-state">${icon('search-x', 24)}<strong>Aucun signalement</strong><p>Essayez un autre mot-clé.</p></div>`}
+          </div>
+          <button class="citizen-nearby-more-v3" data-action="navigate" data-view="my-reports">Voir tous les signalements ${icon('arrow-right', 14)}</button>
         </aside>
       </div>
     </section>
   `;
 }
-
 function citizenWizardView() {
   const draft = state.draft;
   const step = Math.min(4, Math.max(1, state.activeStep || 1));
