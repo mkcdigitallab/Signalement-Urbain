@@ -2042,3 +2042,287 @@ button {
     align-items: flex-start;
   }
 }
+
+/* ==========================================================================
+   FRONTEND POLISH — ÉTAPE 1 : STRUCTURE & HIÉRARCHIE
+   ========================================================================== */
+
+/* Donner une vraie zone de lecture au contenu */
+.app-content-scroll {
+  padding: 22px 32px 32px;
+  gap: 20px;
+}
+
+/* Topbar plus respirante et moins massive */
+.app-topbar {
+  min-height: 60px;
+  height: 60px;
+  padding: 0 24px;
+}
+
+.topbar-right-controls {
+  gap: 8px;
+}
+
+/* Les contrôles secondaires doivent rester compacts */
+.region-select-badge,
+.role-switcher-badge {
+  padding: 6px 10px;
+}
+
+.action-circle-btn {
+  width: 36px;
+  height: 36px;
+}
+
+/* Le bandeau workflow devient discret : il accompagne le contenu
+   sans concurrencer le header principal. */
+.workflow-step-banner {
+  padding: 6px 24px;
+  min-height: 40px;
+}
+
+.workflow-step-chip {
+  padding: 3px 9px;
+  font-size: 10.5px;
+}
+
+/* Réduction de la densité de la sidebar */
+.app-sidebar {
+  width: 240px;
+  padding: 18px 12px;
+}
+
+.sidebar-nav-link {
+  padding: 9px 12px;
+}
+
+/* Largeur de lecture cohérente pour les gros écrans */
+.app-content-scroll > * {
+  width: 100%;
+  max-width: 1480px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ==========================================================================
+   RESPONSIVE — STRUCTURE
+   ========================================================================== */
+
+@media (max-width: 1100px) {
+  .app-topbar {
+    padding: 0 18px;
+  }
+
+  .app-content-scroll {
+    padding: 20px 20px 28px;
+  }
+
+  .topbar-title {
+    font-size: 18px;
+  }
+
+  .role-pill-indicator {
+    display: none;
+  }
+
+  .test-version-banner {
+    padding: 7px 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Sur mobile, la page doit être une vraie interface verticale. */
+  html,
+  body,
+  #app {
+    min-width: 0;
+  }
+
+  .app-container-fluid {
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .app-sidebar {
+    width: 100%;
+    height: auto;
+    max-height: none;
+    padding: 8px 10px;
+    border-right: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    flex-shrink: 0;
+  }
+
+  .sidebar-logo-brand,
+  .sidebar-footer-box {
+    display: none;
+  }
+
+  .sidebar-nav-list {
+    flex-direction: row;
+    gap: 6px;
+    overflow-x: auto;
+    padding: 2px 0;
+    scrollbar-width: none;
+  }
+
+  .sidebar-nav-list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .sidebar-nav-item {
+    flex: 0 0 auto;
+    width: auto;
+  }
+
+  .sidebar-nav-link {
+    width: auto;
+    min-height: 38px;
+    padding: 8px 11px;
+    white-space: nowrap;
+    font-size: 12px;
+  }
+
+  .sidebar-nav-link i,
+  .sidebar-nav-link svg {
+    width: 16px;
+    font-size: 14px;
+  }
+
+  .nav-badge-pill {
+    display: none;
+  }
+
+  .app-main-viewport {
+    min-height: 0;
+    height: auto;
+  }
+
+  .app-topbar {
+    height: auto;
+    min-height: 58px;
+    padding: 10px 14px;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .topbar-left {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .topbar-title {
+    font-size: 16px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .topbar-right-controls {
+    flex-shrink: 0;
+    gap: 6px;
+  }
+
+  .region-select-badge,
+  .role-switcher-badge {
+    display: none;
+  }
+
+  .btn-report-quick {
+    padding: 8px 11px;
+    font-size: 12px;
+  }
+
+  .btn-report-quick span {
+    display: none;
+  }
+
+  .action-circle-btn {
+    width: 34px;
+    height: 34px;
+  }
+
+  .app-content-scroll {
+    padding: 16px 14px 24px;
+    gap: 16px;
+  }
+
+  .workflow-step-banner {
+    padding: 6px 12px;
+  }
+
+  .workflow-steps-chain {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .workflow-steps-chain::-webkit-scrollbar {
+    display: none;
+  }
+
+  .workflow-step-banner .btn-scenario-guide {
+    display: none;
+  }
+
+  .citizen-welcome-hero {
+    padding: 22px 18px;
+    border-radius: var(--radius-lg);
+  }
+
+  .citizen-welcome-content h2 {
+    font-size: 22px;
+  }
+
+  .admin-kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .admin-middle-row {
+    grid-template-columns: 1fr;
+  }
+
+  .citizen-reports-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .test-version-banner {
+    padding: 6px 10px;
+  }
+
+  .test-version-title {
+    display: none;
+  }
+
+  .test-version-actors-group {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .actor-nav-pill {
+    padding: 6px 9px;
+    font-size: 11px;
+  }
+
+  .app-topbar {
+    padding: 9px 10px;
+  }
+
+  .topbar-title {
+    font-size: 15px;
+  }
+
+  .app-content-scroll {
+    padding: 12px 10px 20px;
+  }
+
+  .admin-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .citizen-welcome-hero {
+    padding: 18px 16px;
+  }
+}
