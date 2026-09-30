@@ -3262,3 +3262,230 @@ select:focus-visible {
   .kpi-count-number{font-size:25px}
   .dashboard-card-widget{padding:16px}
 }
+
+
+/* ==========================================================================
+   HARMONISATION DES DASHBOARDS — même système visuel que le citoyen
+   ========================================================================== */
+
+/* Base commune */
+.agent-dashboard,
+.admin-dashboard {
+  width:100%;
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
+
+.agent-dashboard-hero,
+.admin-page-header,
+.admin-dashboard-header {
+  background:linear-gradient(135deg,#07271b 0%,#00875a 100%);
+  border-radius:var(--radius-xl);
+  color:#fff;
+  box-shadow:var(--shadow-md);
+}
+
+.agent-dashboard-hero {
+  padding:28px 32px;
+}
+
+.agent-dashboard-hero h1,
+.admin-page-header h1,
+.admin-dashboard-header h1 {
+  color:#fff;
+}
+
+.agent-dashboard-hero p,
+.admin-page-header p,
+.admin-dashboard-header p {
+  color:rgba(255,255,255,.82);
+}
+
+/* KPI : exactement le langage des cartes citoyennes */
+.agent-kpi-grid,
+.admin-kpi-grid {
+  gap:12px;
+}
+
+.agent-kpi-card,
+.kpi-stat-box {
+  background:var(--bg-card);
+  border:1px solid var(--border-color);
+  border-radius:16px;
+  box-shadow:var(--shadow-sm);
+  transition:var(--transition);
+}
+
+.agent-kpi-card:hover,
+.kpi-stat-box:hover {
+  border-color:rgba(0,135,90,.28);
+  box-shadow:var(--shadow-md);
+  transform:translateY(-1px);
+}
+
+.agent-kpi-icon,
+.kpi-icon-pill {
+  background:var(--primary-green-light);
+  color:var(--primary-green);
+}
+
+.agent-kpi-card.is-alert .agent-kpi-icon {
+  background:var(--primary-green-light);
+  color:var(--primary-green);
+}
+
+.agent-kpi-card.is-green .agent-kpi-icon {
+  background:var(--primary-green-light);
+  color:var(--primary-green);
+}
+
+/* Titres de sections */
+.agent-section-heading,
+.widget-header {
+  margin-bottom:12px;
+}
+
+.agent-section-kicker,
+.admin-section-kicker {
+  color:var(--primary-green);
+}
+
+.agent-section-heading h2,
+.widget-header-title {
+  color:var(--text-main);
+}
+
+/* Cartes et zones principales */
+.agent-work-card,
+.agent-side-card,
+.dashboard-card-widget {
+  background:var(--bg-card);
+  border:1px solid var(--border-color);
+  box-shadow:var(--shadow-sm);
+}
+
+.agent-work-card:hover {
+  border-color:rgba(0,135,90,.28);
+  box-shadow:var(--shadow-md);
+}
+
+.agent-priority,
+.agent-route-count,
+.agent-priority-note {
+  background:var(--primary-green-light);
+  color:var(--primary-green);
+}
+
+.agent-priority.priority-urgente {
+  background:var(--primary-green-light);
+  color:var(--primary-green);
+}
+
+.agent-priority.priority-faible {
+  background:var(--primary-green-light);
+  color:var(--primary-green);
+}
+
+.agent-next-step,
+.agent-next-step.is-green {
+  background:var(--primary-green-light);
+  border-color:rgba(0,135,90,.16);
+}
+
+.agent-next-step-icon,
+.agent-next-step.is-green .agent-next-step-icon,
+.agent-inspection-summary-head {
+  color:var(--primary-green);
+}
+
+.agent-inspection-summary {
+  border-left-color:var(--primary-green);
+}
+
+.agent-secondary-action:hover {
+  border-color:var(--primary-green);
+  color:var(--primary-green);
+}
+
+/* Régional : priorité au registre, comme le citoyen donne la priorité aux signalements */
+.admin-middle-row {
+  grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);
+  gap:18px;
+}
+
+.dashboard-card-widget {
+  padding:20px;
+  border-radius:16px;
+}
+
+.admin-map-preview-wrap {
+  background:var(--bg-app);
+  border-color:var(--border-color);
+}
+
+.region-progress-bar {
+  background:var(--border-color);
+}
+
+.region-progress-bar > * {
+  background:var(--primary-green);
+}
+
+.clean-data-table {
+  border:1px solid var(--border-color);
+  border-radius:14px;
+  overflow:hidden;
+}
+
+.clean-data-table th {
+  background:var(--bg-app);
+  color:var(--text-light);
+}
+
+.clean-data-table td {
+  background:var(--bg-card);
+}
+
+.clean-data-table tbody tr:hover td {
+  background:var(--primary-green-light);
+}
+
+/* Suppression des accents bleus/violets/orange dans les tableaux de bord.
+   Les statuts restent ceux du design system global. */
+.admin-kpi-grid .kpi-stat-box svg,
+.admin-kpi-grid .kpi-icon-pill {
+  color:var(--primary-green);
+}
+
+.admin-kpi-grid .kpi-icon-pill {
+  background:var(--primary-green-light);
+}
+
+/* Responsive commun */
+@media(max-width:1000px) {
+  .agent-dashboard-hero {
+    padding:24px;
+  }
+
+  .admin-middle-row {
+    grid-template-columns:1fr;
+  }
+}
+
+@media(max-width:700px) {
+  .agent-dashboard-hero {
+    padding:20px;
+    border-radius:16px;
+  }
+
+  .dashboard-card-widget {
+    padding:16px;
+  }
+
+  .clean-data-table {
+    display:block;
+    overflow-x:auto;
+    white-space:nowrap;
+  }
+}
