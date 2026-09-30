@@ -1532,9 +1532,6 @@ function openReportDetailsModal(reportId) {
               </div>
             `).join('')}
           </div>
-        </div>
-          <div><span>Soutiens</span><strong>${report.supports} citoyen${report.supports > 1 ? 's' : ''}</strong></div>
-        </div>
         ${report.report ? `
           <div class="inspection-report-box">
             <div class="inspection-header"><span class="inspection-title-badge">${icon('clipboard-check', 14)} Constat technique</span></div>
