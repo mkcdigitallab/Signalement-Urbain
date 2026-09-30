@@ -994,21 +994,21 @@ function adminDashboardView() {
   const urgent = regionalReports.filter(r => r.priority === 'Urgente' && !['resolved', 'rejected'].includes(r.status));
   const total = regionalReports.length;
   const recentReports = regionalReports
-    .filter(r => \`${r.title} ${r.category} ${r.location}\`.toLowerCase().includes(state.query.toLowerCase()))
+    .filter(r => `${r.title} ${r.category} ${r.location}`.toLowerCase().includes(state.query.toLowerCase()))
     .slice(0, 7);
   const pct = (value) => total ? Math.round((value / total) * 100) : 0;
 
   const actionFor = (report) => {
     if (report.status === 'received') {
-      return \`<button class="btn-primary-green admin-supervision-action" data-action="admin-assign" data-id="${report.id}">${icon('user-round-plus', 13)} Affecter</button>\`;
+      return `<button class="btn-primary-green admin-supervision-action" data-action="admin-assign" data-id="${report.id}">${icon('user-round-plus', 13)} Affecter</button>`;
     }
     if (report.status === 'awaiting') {
-      return \`<button class="btn-primary-green admin-supervision-action" data-action="admin-authorize" data-id="${report.id}">${icon('stamp', 13)} Autoriser</button>\`;
+      return `<button class="btn-primary-green admin-supervision-action" data-action="admin-authorize" data-id="${report.id}">${icon('stamp', 13)} Autoriser</button>`;
     }
-    return \`<button class="btn-default-outline admin-supervision-action" data-action="open-detail" data-id="${report.id}">${icon('eye', 13)} Détails</button>\`;
+    return `<button class="btn-default-outline admin-supervision-action" data-action="open-detail" data-id="${report.id}">${icon('eye', 13)} Détails</button>`;
   };
 
-  return \`
+  return `
     <section class="admin-dashboard supervision-dashboard">
       <header class="citizen-welcome-hero admin-supervision-hero">
         <div>
@@ -1049,7 +1049,7 @@ function adminDashboardView() {
             <input type="search" data-action="admin-search" placeholder="Rechercher un signalement..." value="${escapeHtml(state.query)}" oninput="state.query = this.value; render();">
           </div>
           <div class="admin-supervision-list">
-            ${recentReports.length ? recentReports.map(report => \`
+            ${recentReports.length ? recentReports.map(report => `
               <article class="admin-supervision-report" data-action="open-detail" data-id="${report.id}" tabindex="0" role="button">
                 <div class="admin-supervision-report-main">
                   <div>
@@ -1068,9 +1068,9 @@ function adminDashboardView() {
                   </div>
                 </div>
               </article>
-            \`).join('') : \`
+            `).join('') : `
               <div class="citizen-empty-state">${icon('search-x', 24)}<strong>Aucun dossier trouvé</strong><span>Essayez une autre recherche ou vérifiez la région active.</span></div>
-            \`}
+            `}
           </div>
         </section>
 
@@ -1106,7 +1106,7 @@ function adminDashboardView() {
         </aside>
       </div>
     </section>
-  \`;
+  `;
 }
 
 function citizenMyReportsView() {
