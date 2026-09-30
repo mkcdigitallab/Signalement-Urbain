@@ -658,6 +658,9 @@ function citizenDashboardView() {
     .filter(r => `${r.title} ${r.category} ${r.location}`.toLowerCase().includes(state.query.toLowerCase()))
     .slice(0, 6);
 
+  const statusProgress = { received: 25, assigned: 45, inspection: 65, awaiting: 78, progress: 88, resolved: 100, rejected: 100 };
+  const trackingSteps = ['received', 'assigned', 'inspection', 'progress', 'resolved'];
+
   return `
     <section class="citizen-dashboard-shell">
       <div class="citizen-welcome-hero">
@@ -706,12 +709,30 @@ function citizenDashboardView() {
         </section>
 
         <aside class="citizen-side-column">
-          <section class="dashboard-card-widget citizen-tracking-widget">
-            <div class="widget-header-title"><span>${icon('route',16)} Mon suivi</span><button class="citizen-link-button" data-action="navigate" data-view="my-reports">Tout voir</button></div>
-            <div class="citizen-progress-summary"><div class="citizen-progress-ring" style="--progress:${myReports.length ? Math.round(myResolved.length/myReports.length*360 : 0)}deg"><strong>${myReports.length ? Math.round(myResolved.length/myReports.length*100) : 0}%</strong><span>résolu</span></div><div><strong>${myActive.length} dossier${myActive.length>1?'s':''} actif${myActive.length>1?'s':''}</strong><span>sur votre espace</span></div></div>
-            <div class="timeline-vertical-flow">${myReports.slice(0,3).map(report => `<div class="timeline-step-row"><div class="timeline-step-dot ${report.status==='resolved'?'active':''}">${icon(report.status==='resolved'?'check':'clock',10)}</div><div><div class="timeline-step-title">${escapeHtml(report.title)}</div><div class="timeline-step-time">${statusLabels[report.status]} · ${report.date}</div></div></div>`).join('')}</div>
-            <button class="btn-default-outline citizen-full-button" data-action="navigate" data-view="notifications">${icon('bell',14)} Voir mes notifications</button>
+          <section class="dashboard-card-widget citizen-my-reports-widget">
+            <div class="widget-header-title"><span>${icon('clipboard-list',16)} Mes signalements</span><button class="citizen-link-button" data-action="navigate" data-view="my-reports">Tout voir</button></div>
+            <p class="citizen-widget-intro">Chaque dossier possède son propre suivi. Ouvrez un signalement pour voir exactement où il en est.</p>
+            <div class="citizen-my-reports-list">
+              ${myReports.length ? myReports.map(report => {
+                const progress = statusProgress[report.status] || 0;
+                const currentIndex = trackingSteps.indexOf(report.status);
+                return `
+                  <article class="citizen-my-report-item">
+                    <div class="citizen-my-report-top">
+                      <div><span class="citizen-my-report-id">${escapeHtml(report.id)}</span><h4>${escapeHtml(report.title)}</h4></div>
+                      <span class="status-tag ${statusClasses[report.status]}">${statusLabels[report.status]}</span>
+                    </div>
+                    <div class="citizen-my-report-meta">${icon('map-pin',11)} ${escapeHtml(report.location)} <span>·</span> ${report.date}</div>
+                    <div class="citizen-mini-progress" aria-label="Progression du signalement à ${progress}%"><span style="width:${progress}%"></span></div>
+                    <div class="citizen-mini-steps">
+                      ${trackingSteps.map((step, index) => `<span class="${currentIndex >= index ? 'done' : ''}">${icon(currentIndex >= index ? 'check' : 'circle',9)} ${step === 'received' ? 'Reçu' : step === 'assigned' ? 'Affecté' : step === 'inspection' ? 'Inspecté' : step === 'progress' ? 'Intervention' : 'Résolu'}</span>`).join('')}
+                    </div>
+                    <button class="btn-default-outline citizen-track-button" data-action="open-detail" data-id="${report.id}">${icon('route',14)} Voir le suivi de ce signalement</button>
+                  </article>`;
+              }).join('') : `<div class="citizen-empty-state">${icon('file-x',26)}<strong>Vous n'avez encore aucun signalement</strong><p>Créez votre premier signalement pour suivre son traitement ici.</p></div>`}
+            </div>
           </section>
+
           <section class="citizen-quick-actions"><div class="citizen-section-kicker">${icon('zap',14)} Accès rapide</div><button data-action="navigate" data-view="lost-items">${icon('search',17)}<span><strong>Objets trouvés</strong><small>Consulter les objets et CNI retrouvés</small></span>${icon('chevron-right',16)}</button><button data-action="navigate" data-view="my-reports">${icon('clipboard-list',17)}<span><strong>Mes dossiers</strong><small>Historique de vos signalements</small></span>${icon('chevron-right',16)}</button></section>
         </aside>
       </div>
