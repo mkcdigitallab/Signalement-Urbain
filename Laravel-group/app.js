@@ -986,238 +986,129 @@ function agentDashboardView() {
 }
 
 function adminDashboardView() {
-  const unassigned = state.reports.filter(r => r.status === 'received');
-  const awaitingReports = state.reports.filter(r => r.status === 'awaiting');
-  const inProgress = state.reports.filter(r => r.status === 'progress' || r.status === 'assigned');
-  const resolved = state.reports.filter(r => r.status === 'resolved');
-  
-  const total = state.reports.length;
-  const pctUnassigned = Math.round((unassigned.length / total) * 100);
-  const pctInProgress = Math.round((inProgress.length / total) * 100);
-  const pctResolved = Math.round((resolved.length / total) * 100);
+  const regionalReports = state.reports.filter(r => r.region === state.region);
+  const toAssign = regionalReports.filter(r => r.status === 'received');
+  const toValidate = regionalReports.filter(r => r.status === 'awaiting');
+  const inProgress = regionalReports.filter(r => ['assigned', 'inspection', 'progress'].includes(r.status));
+  const resolved = regionalReports.filter(r => r.status === 'resolved');
+  const urgent = regionalReports.filter(r => r.priority === 'Urgente' && !['resolved', 'rejected'].includes(r.status));
+  const total = regionalReports.length;
+  const recentReports = regionalReports
+    .filter(r => \`${r.title} ${r.category} ${r.location}\`.toLowerCase().includes(state.query.toLowerCase()))
+    .slice(0, 7);
+  const pct = (value) => total ? Math.round((value / total) * 100) : 0;
 
-  return `
-    <div style="display:flex; flex-direction:column; gap:22px;">
-      <!-- Grille KPI 4 Cartes -->
-      <div class="admin-kpi-grid">
-        <div class="kpi-stat-box">
-          <div class="kpi-icon-pill red">${icon('inbox', 22)}</div>
-          <div class="kpi-data-content">
-            <span class="kpi-label-text">Nouveaux / À affecter</span>
-            <span class="kpi-count-number">${unassigned.length}</span>
+  const actionFor = (report) => {
+    if (report.status === 'received') {
+      return \`<button class="btn-primary-green admin-supervision-action" data-action="admin-assign" data-id="${report.id}">${icon('user-round-plus', 13)} Affecter</button>\`;
+    }
+    if (report.status === 'awaiting') {
+      return \`<button class="btn-primary-green admin-supervision-action" data-action="admin-authorize" data-id="${report.id}">${icon('stamp', 13)} Autoriser</button>\`;
+    }
+    return \`<button class="btn-default-outline admin-supervision-action" data-action="open-detail" data-id="${report.id}">${icon('eye', 13)} Détails</button>\`;
+  };
+
+  return \`
+    <section class="admin-dashboard supervision-dashboard">
+      <header class="citizen-welcome-hero admin-supervision-hero">
+        <div>
+          <span class="citizen-section-kicker admin-supervision-kicker">${icon('landmark', 14)} Supervision Régionale</span>
+          <h1>Pilotage de la région de ${escapeHtml(state.region)}</h1>
+          <p>Suivez les signalements, affectez les dossiers aux services municipaux et validez les rapports transmis par le terrain.</p>
+          <div class="citizen-hero-meta">
+            <span>${icon('map-pin', 13)} Région active : ${escapeHtml(state.region)}</span>
+            <span>${icon('clipboard-list', 13)} ${total} dossier${total !== 1 ? 's' : ''} régional${total !== 1 ? 'x' : ''}</span>
           </div>
         </div>
-        
-        <div class="kpi-stat-box">
-          <div class="kpi-icon-pill orange">${icon('clipboard-check', 22)}</div>
-          <div class="kpi-data-content">
-            <span class="kpi-label-text">Rapports d’inspection à valider</span>
-            <span class="kpi-count-number">${awaitingReports.length}</span>
-          </div>
+        <div class="admin-supervision-focus">
+          <span>À traiter maintenant</span>
+          <strong>${toAssign.length + toValidate.length}</strong>
+          <small>${urgent.length} urgente${urgent.length !== 1 ? 's' : ''}</small>
         </div>
-        
-        <div class="kpi-stat-box">
-          <div class="kpi-icon-pill blue">${icon('wrench', 22)}</div>
-          <div class="kpi-data-content">
-            <span class="kpi-label-text">Chantiers en cours</span>
-            <span class="kpi-count-number">${inProgress.length}</span>
+      </header>
+
+      <section class="citizen-kpi-grid admin-supervision-kpis">
+        <div class="citizen-kpi-card"><span class="citizen-kpi-icon">${icon('inbox', 18)}</span><div><small>À affecter</small><strong>${toAssign.length}</strong><span>Nouveaux dossiers</span></div></div>
+        <div class="citizen-kpi-card"><span class="citizen-kpi-icon">${icon('clipboard-check', 18)}</span><div><small>À valider</small><strong>${toValidate.length}</strong><span>Rapports terrain</span></div></div>
+        <div class="citizen-kpi-card"><span class="citizen-kpi-icon">${icon('wrench', 18)}</span><div><small>En cours</small><strong>${inProgress.length}</strong><span>Services mobilisés</span></div></div>
+        <div class="citizen-kpi-card"><span class="citizen-kpi-icon">${icon('check-circle-2', 18)}</span><div><small>Résolus</small><strong>${resolved.length}</strong><span>Dossiers clôturés</span></div></div>
+      </section>
+
+      <div class="citizen-dashboard-grid admin-supervision-grid">
+        <section class="citizen-feed-panel">
+          <div class="citizen-section-heading">
+            <div>
+              <span class="citizen-section-kicker">${icon('radio', 14)} Suivi régional</span>
+              <h3>Signalements de ${escapeHtml(state.region)}</h3>
+              <p>Les dossiers nécessitant une affectation, une validation ou un suivi municipal.</p>
+            </div>
+            <span class="admin-supervision-count">${regionalReports.length} dossiers</span>
           </div>
-        </div>
-        
-        <div class="kpi-stat-box">
-          <div class="kpi-icon-pill green">${icon('check-circle', 22)}</div>
-          <div class="kpi-data-content">
-            <span class="kpi-label-text">Résolus & Clôturés</span>
-            <span class="kpi-count-number">${resolved.length}</span>
+          <div class="citizen-search-bar admin-supervision-search">
+            ${icon('search', 16)}
+            <input type="search" data-action="admin-search" placeholder="Rechercher un signalement..." value="${escapeHtml(state.query)}">
           </div>
-        </div>
+          <div class="admin-supervision-list">
+            ${recentReports.length ? recentReports.map(report => \`
+              <article class="admin-supervision-report" data-action="open-detail" data-id="${report.id}" tabindex="0" role="button">
+                <div class="admin-supervision-report-main">
+                  <div>
+                    <div class="admin-supervision-report-top">
+                      <span class="admin-supervision-id">${escapeHtml(report.id)}</span>
+                      <span class="status-tag ${statusClasses[report.status]}">${statusLabels[report.status]}</span>
+                    </div>
+                    <h4>${escapeHtml(report.title)}</h4>
+                    <p>${icon('map-pin', 12)} ${escapeHtml(report.location)}</p>
+                    <small>${escapeHtml(report.category)} · ${escapeHtml(report.service)} · ${report.date}</small>
+                  </div>
+                  <div class="admin-supervision-report-side">
+                    <span class="admin-supervision-priority ${report.priority === 'Urgente' ? 'is-urgent' : ''}">${escapeHtml(report.priority)}</span>
+                    <strong>${icon('users', 12)} ${report.supports}</strong>
+                    <div onclick="event.stopPropagation();">${actionFor(report)}</div>
+                  </div>
+                </div>
+              </article>
+            \`).join('') : \`
+              <div class="citizen-empty-state">${icon('search-x', 24)}<strong>Aucun dossier trouvé</strong><span>Essayez une autre recherche ou vérifiez la région active.</span></div>
+            \`}
+          </div>
+        </section>
+
+        <aside class="citizen-side-column">
+          <section class="dashboard-card-widget admin-supervision-side-card">
+            <div class="admin-supervision-side-heading"><span>${icon('list-checks', 15)} Priorités de supervision</span></div>
+            <div class="admin-supervision-status-list">
+              <div><span><b>À affecter</b><small>Nouveaux dossiers</small></span><strong>${toAssign.length}</strong></div>
+              <div><span><b>À valider</b><small>Rapports terrain</small></span><strong>${toValidate.length}</strong></div>
+              <div><span><b>En cours</b><small>Services mobilisés</small></span><strong>${inProgress.length}</strong></div>
+              <div><span><b>Résolus</b><small>Dossiers clôturés</small></span><strong>${resolved.length}</strong></div>
+            </div>
+          </section>
+
+          <section class="dashboard-card-widget admin-supervision-side-card">
+            <div class="admin-supervision-side-heading"><span>${icon('pie-chart', 15)} État du traitement</span></div>
+            <div class="admin-supervision-progress">
+              <div><span>À affecter</span><strong>${pct(toAssign.length)}%</strong></div>
+              <div class="admin-supervision-bar"><span style="width:${pct(toAssign.length)}%"></span></div>
+              <div><span>En cours</span><strong>${pct(inProgress.length)}%</strong></div>
+              <div class="admin-supervision-bar"><span style="width:${pct(inProgress.length)}%"></span></div>
+              <div><span>Résolus</span><strong>${pct(resolved.length)}%</strong></div>
+              <div class="admin-supervision-bar"><span style="width:${pct(resolved.length)}%"></span></div>
+            </div>
+          </section>
+
+          <section class="dashboard-card-widget admin-supervision-side-card">
+            <div class="admin-supervision-side-heading"><span>${icon('zap', 15)} Actions rapides</span></div>
+            <button class="btn-default-outline admin-quick-action" data-action="navigate" data-view="to-assign">${icon('inbox', 14)} Voir les dossiers à affecter</button>
+            <button class="btn-default-outline admin-quick-action" data-action="navigate" data-view="to-validate">${icon('file-check', 14)} Voir les rapports à valider</button>
+            <button class="btn-default-outline admin-quick-action" data-action="navigate" data-view="services">${icon('wrench', 14)} Services municipaux</button>
+          </section>
+        </aside>
       </div>
-      
-      <!-- Ligne Médiane : Donut Chart SVG & Répartition Régionale -->
-      <div class="admin-middle-row">
-        <!-- Widget Donut SVG Moderne -->
-        <div class="dashboard-card-widget">
-          <div class="widget-header-title">
-            <span>${icon('pie-chart', 16)} État du Traitement Urbain</span>
-            <span style="font-size:12px; color:var(--text-muted);">Total : ${total} dossiers</span>
-          </div>
-          
-          <div class="donut-chart-container">
-            <div class="donut-svg-wrap">
-              <svg viewBox="0 0 36 36" style="width:100%; height:100%; transform:rotate(-90deg);">
-                <!-- Cercle de fond -->
-                <circle cx="18" cy="18" r="15.915" fill="transparent" stroke="var(--border-color)" stroke-width="3.2"></circle>
-                <!-- Segment Résolu (Vert) -->
-                <circle cx="18" cy="18" r="15.915" fill="transparent" stroke="#16a34a" stroke-width="3.6"
-                  stroke-dasharray="${pctResolved} ${100 - pctResolved}" stroke-dashoffset="0"></circle>
-                <!-- Segment En cours (Bleu) -->
-                <circle cx="18" cy="18" r="15.915" fill="transparent" stroke="#2563eb" stroke-width="3.6"
-                  stroke-dasharray="${pctInProgress} ${100 - pctInProgress}" stroke-dashoffset="${-pctResolved}"></circle>
-                <!-- Segment À affecter (Orange) -->
-                <circle cx="18" cy="18" r="15.915" fill="transparent" stroke="#f97316" stroke-width="3.6"
-                  stroke-dasharray="${pctUnassigned} ${100 - pctUnassigned}" stroke-dashoffset="${-(pctResolved + pctInProgress)}"></circle>
-              </svg>
-              <div class="donut-center-total">
-                <span class="num">${total}</span>
-                <span class="lbl">Signalements</span>
-              </div>
-            </div>
-            
-            <div class="donut-legend-list">
-              <div class="legend-item-row">
-                <span class="legend-dot" style="background-color:#f97316;"></span>
-                <span>À affecter</span>
-                <span class="legend-percent">${pctUnassigned}% (${unassigned.length})</span>
-              </div>
-              <div class="legend-item-row">
-                <span class="legend-dot" style="background-color:#2563eb;"></span>
-                <span>En cours / Inspecté</span>
-                <span class="legend-percent">${pctInProgress}% (${inProgress.length})</span>
-              </div>
-              <div class="legend-item-row">
-                <span class="legend-dot" style="background-color:#16a34a;"></span>
-                <span>Résolus</span>
-                <span class="legend-percent">${pctResolved}% (${resolved.length})</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Widget Répartition par Arrondissement / Commune -->
-        <div class="dashboard-card-widget">
-          <div class="widget-header-title">
-            <span>${icon('map', 16)} Répartition des Signalements · ${state.region}</span>
-            <span style="font-size:12px; color:var(--primary-green); font-weight:700;">Temps moyen : 48h</span>
-          </div>
-          
-          <div class="admin-map-preview-wrap">
-            <div class="region-stat-row">
-              <div class="region-stat-header">
-                <span>Dakar Plateau & Médina</span>
-                <span>42% (26 dossiers)</span>
-              </div>
-              <div class="region-progress-bar">
-                <div class="region-progress-fill" style="width:42%;"></div>
-              </div>
-            </div>
-            
-            <div class="region-stat-row">
-              <div class="region-stat-header">
-                <span>Grand Dakar & Castors</span>
-                <span>28% (17 dossiers)</span>
-              </div>
-              <div class="region-progress-bar">
-                <div class="region-progress-fill" style="width:28%; background-color:#2563eb;"></div>
-              </div>
-            </div>
-            
-            <div class="region-stat-row">
-              <div class="region-stat-header">
-                <span>Parcelles Assainies & Almadies</span>
-                <span>18% (11 dossiers)</span>
-              </div>
-              <div class="region-progress-bar">
-                <div class="region-progress-fill" style="width:18%; background-color:#f59e0b;"></div>
-              </div>
-            </div>
-            
-            <div class="region-stat-row">
-              <div class="region-stat-header">
-                <span>Pikine, Guédiawaye & Rufisque</span>
-                <span>12% (8 dossiers)</span>
-              </div>
-              <div class="region-progress-bar">
-                <div class="region-progress-fill" style="width:12%; background-color:#8b5cf6;"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Table des Signalements Propre & Épurée -->
-      <div class="dashboard-card-widget" style="padding:0; overflow:hidden;">
-        <div style="padding:18px 24px; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
-          <div>
-            <h3 style="font-size:16px; font-weight:800; color:var(--text-main);">
-              Registre Général des Signalements
-            </h3>
-            <p style="font-size:12.5px; color:var(--text-muted);">
-              Affectation directe aux services municipaux et délivrance des autorisations de travaux.
-            </p>
-          </div>
-          
-          <div style="display:flex; gap:8px;">
-            <input class="auth-input" type="text" placeholder="Filtrer un dossier..." style="width:220px; padding:6px 12px; font-size:12px;" value="${escapeHtml(state.query)}" oninput="state.query = this.value; render();">
-          </div>
-        </div>
-        
-        <table class="clean-data-table">
-          <thead>
-            <tr>
-              <th>ID & Problème</th>
-              <th>Catégorie</th>
-              <th>Localisation</th>
-              <th>Priorité</th>
-              <th>Soutiens</th>
-              <th>Statut</th>
-              <th style="text-align:right;">Action Mairie</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${state.reports.map(report => `
-              <tr onclick="window.openReportDetails('${report.id}')">
-                <td>
-                  <strong style="color:var(--text-main); font-weight:800; display:block;">${escapeHtml(report.title)}</strong>
-                  <span style="font-size:11px; color:var(--text-muted); font-weight:600;">${report.id} · ${report.date}</span>
-                </td>
-                <td>
-                  <span style="font-weight:700; font-size:12.5px; color:var(--text-main);">${escapeHtml(report.category)}</span>
-                </td>
-                <td style="font-size:12px; color:var(--text-muted);">
-                  ${icon('map-pin', 12)} ${escapeHtml(report.location)}
-                </td>
-                <td>
-                  <span class="status-tag ${report.priority === 'Urgente' ? 'nouveau' : 'pris_en_charge'}">
-                    ${report.priority}
-                  </span>
-                </td>
-                <td>
-                  <span style="font-weight:800; color:var(--primary-green); display:flex; align-items:center; gap:4px;">
-                    ${icon('users', 12)} ${report.supports}
-                  </span>
-                </td>
-                <td>
-                  <span class="status-tag ${statusClasses[report.status]}">
-                    ${statusLabels[report.status]}
-                  </span>
-                </td>
-                <td style="text-align:right;" onclick="event.stopPropagation();">
-                  ${report.status === 'received' ? `
-                    <button class="btn-primary-green" style="padding:6px 12px; font-size:12px;" data-action="admin-assign" data-id="${report.id}">
-                      Affecter au service
-                    </button>
-                  ` : report.status === 'awaiting' ? `
-                    <button class="btn-primary-green" style="padding:6px 12px; font-size:12px; background-color:#2563eb;" data-action="admin-authorize" data-id="${report.id}">
-                      ${icon('stamp', 13)} Autoriser travaux
-                    </button>
-                  ` : `
-                    <button class="btn-default-outline" style="padding:6px 12px; font-size:12px;" data-action="open-detail" data-id="${report.id}">
-                      Détails
-                    </button>
-                  `}
-                </td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  `;
+    </section>
+  \`;
 }
 
-// ==========================================================================
-// VUES COMPLÉMENTAIRES (MES SIGNALEMENTS, INSPECTIONS, SERVICES)
-// ==========================================================================
 function citizenMyReportsView() {
   const myReports = state.reports.filter(r => r.author === 'Awa Diop');
   return `
