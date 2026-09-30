@@ -82,6 +82,35 @@ const roles = {
   }
 };
 
+
+const municipalitiesSenegal = {
+  Dakar: [
+    { name: 'Mairie de Dakar-Plateau', districts: ['Plateau', 'Fann Hock', 'Avenue Malick Sy'] },
+    { name: 'Mairie de la Médina', districts: ['Médina', 'Colobane'] },
+    { name: 'Mairie de Grand Dakar', districts: ['Grand Dakar', 'Castors'] },
+    { name: 'Mairie de Liberté 6', districts: ['Liberté 6', 'VDN'] }
+  ],
+  Thiès: [{ name: 'Mairie de Thiès', districts: [] }],
+  'Saint-Louis': [{ name: 'Mairie de Saint-Louis', districts: [] }],
+  Diourbel: [{ name: 'Mairie de Diourbel', districts: [] }],
+  Fatick: [{ name: 'Mairie de Fatick', districts: [] }],
+  Kaolack: [{ name: 'Mairie de Kaolack', districts: [] }],
+  Louga: [{ name: 'Mairie de Louga', districts: [] }],
+  Matam: [{ name: 'Mairie de Matam', districts: [] }],
+  Tambacounda: [{ name: 'Mairie de Tambacounda', districts: [] }],
+  Kédougou: [{ name: 'Mairie de Kédougou', districts: [] }],
+  Kaffrine: [{ name: 'Mairie de Kaffrine', districts: [] }],
+  Kolda: [{ name: 'Mairie de Kolda', districts: [] }],
+  Ziguinchor: [{ name: 'Mairie de Ziguinchor', districts: [] }],
+  Sédhiou: [{ name: 'Mairie de Sédhiou', districts: [] }]
+};
+
+const serviceByCategory = {
+  'Voirie & Routes': 'Voirie', 'Éclairage public': 'Éclairage public', 'Déchets & Salubrité': 'Propreté & Salubrité',
+  'Eau & Assainissement': 'Assainissement', 'Espaces verts': 'Espaces verts', 'Sécurité & Tranquillité': 'Sécurité urbaine',
+  'Mobilité & Stationnement': 'Mobilité', 'Autre signalement': 'Service municipal'
+};
+
 // Données initiales réalistes (Sénégal)
 const initialReports = [
   {
@@ -277,6 +306,30 @@ function escapeHtml(str = '') {
   })[m]);
 }
 
+function resolveMunicipality(region, location = '') {
+  const options = municipalitiesSenegal[region] || [{ name: `Mairie de ${region}`, districts: [] }];
+  const normalized = location.toLowerCase();
+  return options.find(m => m.districts.some(d => normalized.includes(d.toLowerCase())))?.name || options[0].name;
+}
+
+function ensureWorkflow(report) {
+  if (!report.municipality) report.municipality = resolveMunicipality(report.region, report.location);
+  if (!report.coordinates) report.coordinates = report.region === 'Dakar' ? '14.7167, -17.4677' : 'Coordonnées à confirmer';
+  if (!report.assignedAgent) report.assignedAgent = report.status === 'received' ? '' : 'Amadou Sow';
+  if (!Array.isArray(report.workflow)) {
+    const stages = [['received','Signalement reçu','Le dossier a été enregistré et localisé.'],['assigned','Affectation municipale',`Dossier transmis à ${report.municipality}.`],['inspection','Inspection terrain','Un agent doit constater le problème sur place.'],['awaiting','Rapport technique','Le constat de terrain est soumis à l’administration.'],['progress','Intervention autorisée','Le service compétent peut intervenir.'],['resolved','Contre-visite & clôture','La réalisation a été vérifiée sur le terrain.']];
+    const order=['received','assigned','inspection','awaiting','progress','resolved'];
+    const currentIndex=Math.max(0,order.indexOf(report.status));
+    report.workflow=stages.slice(0,currentIndex+1).map((entry,index)=>({key:entry[0],title:entry[1],detail:entry[2],done:index<=currentIndex}));
+  }
+}
+function addWorkflowEvent(report,key,title,detail){
+  ensureWorkflow(report);
+  const existing=report.workflow.findIndex(event=>event.key===key);
+  const event={key,title,detail,done:true};
+  if(existing>=0){report.workflow[existing]=event;report.workflow=report.workflow.slice(0,existing+1);}else{report.workflow.push(event);}
+}
+
 function renderIcons() {
   if (window.lucide && typeof window.lucide.createIcons === 'function') {
     window.lucide.createIcons({
@@ -319,6 +372,7 @@ function setRole(newRole) {
 // RENDU PRINCIPAL
 // ==========================================================================
 function render() {
+  state.reports.forEach(ensureWorkflow);
   let html = `
     <!-- Bandeau National Tricolore Sénégal -->
     <div class="senegal-stripe-header"></div>
@@ -1465,6 +1519,21 @@ function openReportDetailsModal(reportId) {
         <div class="report-detail-meta-grid">
           <div><span>Date du signalement</span><strong>${escapeHtml(report.date)}</strong></div>
           <div><span>Soutiens</span><strong>${report.supports} citoyen${report.supports > 1 ? 's' : ''}</strong></div>
+          <div><span>Mairie compétente</span><strong>${escapeHtml(report.municipality)}</strong></div>
+          <div><span>Position</span><strong>${escapeHtml(report.coordinates)}</strong></div>
+        </div>
+        <div class="report-workflow-panel">
+          <div class="report-detail-label">${icon('route', 13)} Parcours du dossier</div>
+          <div class="report-workflow-timeline">
+            ${report.workflow.map(event => `
+              <div class="report-workflow-step is-done">
+                <span class="report-workflow-dot">${icon('check', 10)}</span>
+                <div><strong>${escapeHtml(event.title)}</strong><p>${escapeHtml(event.detail)}</p></div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+          <div><span>Soutiens</span><strong>${report.supports} citoyen${report.supports > 1 ? 's' : ''}</strong></div>
         </div>
         ${report.report ? `
           <div class="inspection-report-box">
@@ -1544,7 +1613,7 @@ window.submitNewReport = function() {
     return;
   }
 
-  const newId = `SIG-SN-0${Math.floor(180 + Math.random() * 800)}`;
+  const newId = `SIG-SN-${String(Math.floor(180 + Math.random() * 800)).padStart(4, '0')}`;
   const newReport = {
     id: newId,
     title,
@@ -1556,6 +1625,10 @@ window.submitNewReport = function() {
     status: 'received',
     priority: state.draft.priority,
     service: 'À affecter',
+    municipality: resolveMunicipality(region, loc),
+    coordinates: state.coordinates || 'Position à confirmer',
+    assignedAgent: '',
+    workflow: [],
     supports: 1,
     supportedByUser: true,
     author: 'Awa Diop',
