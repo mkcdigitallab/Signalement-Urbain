@@ -3666,3 +3666,10 @@ select:focus-visible {
 .report-detail-meta-grid span{display:block;color:var(--text-light);font-size:9px;font-weight:700}
 .report-detail-meta-grid strong{display:block;margin-top:4px;color:var(--text-main);font-size:11px}
 @media(max-width:560px){.report-detail-modal-image{height:160px}.report-detail-modal-status{align-items:flex-start;flex-direction:column}.report-detail-priority{text-align:left}.report-detail-meta-grid{grid-template-columns:1fr}.citizen-report-card .citizen-report-open{padding:0 8px}}
+
+
+/* Catalogue citoyen — photo cliquable pour ouvrir le détail */
+.citizen-report-image-wrap[data-action="open-detail"]{cursor:pointer}
+.citizen-report-image-wrap[data-action="open-detail"] .report-thumb-img{transition:transform .2s ease}
+.citizen-report-image-wrap[data-action="open-detail"]:hover .report-thumb-img{transform:scale(1.025)}
+.citizen-report-image-wrap[data-action="open-detail"]:focus-visible{outline:2px solid var(--primary-green);outline-offset:2px}
