@@ -393,7 +393,7 @@ function authPageView() {
             </div>
           </div>
           
-          <div style="font-size:11.5px; color:rgba(255,255,255,0.7);">
+          <div class="auth-footer-note">
             © 2026 République du Sénégal · SunuGox Initiative Citoyenne
           </div>
         </div>
@@ -459,7 +459,7 @@ function authPageView() {
             </button>
           </form>
           
-          <div style="font-size:12px; color:var(--text-muted); text-align:center; margin-top:6px;">
+          <div class="auth-form-note">
             Accessible sur tout le territoire national · Version Desktop Plein Écran
           </div>
         </div>
@@ -669,7 +669,7 @@ function citizenDashboardView() {
           </button>
         </div>
       </div>
-      <div style="font-size:72px; opacity:0.18; padding-right:20px;">
+      <div class="citizen-hero-visual" aria-hidden="true">
         ${icon('map-pin', 84)}
       </div>
     </div>
@@ -684,7 +684,7 @@ function citizenDashboardView() {
           </strong>
           <p>La mairie a résolu le signalement <em>"Branches d'acacia menaçant de rompre"</em> sur l'Avenue Malick Sy. En tant que citoyen du quartier, confirmez-vous la bonne remise en état ?</p>
         </div>
-        <div style="display:flex; gap:8px;">
+        <div class="confirmation-actions">
           <button class="btn-primary-green" data-action="confirm-resolution">
             ${icon('check', 14)} Oui, je confirme la résolution
           </button>
@@ -703,9 +703,9 @@ function citizenDashboardView() {
     `}
     
     <!-- Grille de signalements du quartier & Timeline -->
-    <div style="display:grid; grid-template-columns: 2fr 1fr; gap:20px;">
+    <div class="citizen-dashboard-layout">
       <div>
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <div class="section-heading-row">
           <div>
             <h3 style="font-size:16px; font-weight:800; color:var(--text-main);">Signalements récents dans la région (${state.region})</h3>
             <p style="font-size:12.5px; color:var(--text-muted);">Soutenez les signalements de votre quartier pour accélérer leur prise en charge.</p>
@@ -735,7 +735,7 @@ function citizenDashboardView() {
                   </div>
                 </div>
                 
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; padding-top:8px; border-top:1px solid var(--border-color);">
+                <div class="report-meta-row">
                   <!-- Bouton Soutien Citoyen ("Moi aussi j'ai ce problème") -->
                   <button class="btn-support-issue ${report.supportedByUser ? 'supported' : ''}" data-action="toggle-support" data-id="${report.id}" onclick="event.stopPropagation();">
                     ${icon('users', 14)} 
@@ -1454,7 +1454,7 @@ function citizenMyReportsView() {
                   ${icon('map-pin', 12)} ${escapeHtml(report.location)}
                 </div>
               </div>
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; padding-top:8px; border-top:1px solid var(--border-color);">
+              <div class="report-meta-row">
                 <span style="font-size:12px; font-weight:700; color:var(--primary-green); display:flex; align-items:center; gap:5px;">
                   ${icon('users', 13)} ${report.supports} soutiens
                 </span>
