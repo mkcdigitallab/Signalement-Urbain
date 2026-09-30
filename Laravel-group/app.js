@@ -1977,6 +1977,21 @@ app.addEventListener('click', (event) => {
   }
 });
 
+// Recherche instantanée du tableau de bord citoyen
+app.addEventListener('input', (event) => {
+  const target = event.target;
+  if (target.dataset.action === 'citizen-search') {
+    state.query = target.value;
+    const caret = target.selectionStart;
+    render();
+    const input = document.querySelector('[data-action="citizen-search"]');
+    if (input) {
+      input.focus();
+      input.setSelectionRange(caret, caret);
+    }
+  }
+});
+
 // Écouteur pour le changement de région et rôle rapide dans les select
 app.addEventListener('change', (event) => {
   const target = event.target;
