@@ -2043,28 +2043,97 @@ button {
   }
 }
 
+
 /* ==========================================================================
-   FRONTEND POLISH — ÉTAPE 1 : STRUCTURE & HIÉRARCHIE
+   REFONTE FRONTEND — STRUCTURE, COULEURS, VUES & RESPONSIVE
+   ==========================================================================
+   Objectif : interface plus lisible, moins dense et cohérente sur desktop,
+   tablette et mobile. Aucun comportement métier n'est modifié ici.
    ========================================================================== */
 
-/* Donner une vraie zone de lecture au contenu */
-.app-content-scroll {
-  padding: 22px 32px 32px;
-  gap: 20px;
+/* --------------------------------------------------------------------------
+   1. TOKENS VISUELS
+   -------------------------------------------------------------------------- */
+:root {
+  --ui-success: #00875a;
+  --ui-success-hover: #00704a;
+  --ui-success-soft: #e8f5ef;
+  --ui-info: #2563eb;
+  --ui-info-soft: #eff6ff;
+  --ui-warning: #d97706;
+  --ui-warning-soft: #fff7ed;
+  --ui-danger: #dc2626;
+  --ui-danger-soft: #fef2f2;
+  --ui-neutral-soft: #f1f5f9;
+  --ui-focus: rgba(0, 135, 90, 0.18);
 }
 
-/* Topbar plus respirante et moins massive */
+[data-theme="dark"] {
+  --ui-success-soft: rgba(0, 135, 90, 0.16);
+  --ui-info-soft: rgba(37, 99, 235, 0.15);
+  --ui-warning-soft: rgba(217, 119, 6, 0.15);
+  --ui-danger-soft: rgba(220, 38, 38, 0.15);
+  --ui-neutral-soft: #172033;
+  --ui-focus: rgba(52, 211, 153, 0.18);
+
+  /* Évite les couleurs bleues/orange codées en dur dans les encadrés. */
+  --inspection-accent: #38bdf8;
+  --depot-accent: #60a5fa;
+}
+
+:root {
+  --inspection-accent: #0284c7;
+  --depot-accent: #2563eb;
+}
+
+/* --------------------------------------------------------------------------
+   2. STRUCTURE GÉNÉRALE
+   -------------------------------------------------------------------------- */
+.app-container-fluid,
+.app-main-viewport,
+.app-content-scroll,
+.topbar-left,
+.topbar-right-controls {
+  min-width: 0;
+}
+
+.app-sidebar {
+  width: 240px;
+  padding: 18px 12px;
+}
+
+.sidebar-logo-brand {
+  padding: 5px 8px 15px;
+  margin-bottom: 12px;
+}
+
+.sidebar-nav-list {
+  gap: 4px;
+}
+
+.sidebar-nav-link {
+  min-height: 40px;
+  padding: 9px 12px;
+}
+
 .app-topbar {
-  min-height: 60px;
   height: 60px;
+  min-height: 60px;
   padding: 0 24px;
+}
+
+.topbar-left {
+  gap: 10px;
+}
+
+.topbar-title {
+  font-size: 18px;
 }
 
 .topbar-right-controls {
   gap: 8px;
 }
 
-/* Les contrôles secondaires doivent rester compacts */
 .region-select-badge,
 .role-switcher-badge {
   padding: 6px 10px;
@@ -2075,29 +2144,11 @@ button {
   height: 36px;
 }
 
-/* Le bandeau workflow devient discret : il accompagne le contenu
-   sans concurrencer le header principal. */
-.workflow-step-banner {
-  padding: 6px 24px;
-  min-height: 40px;
+.app-content-scroll {
+  padding: 22px 30px 30px;
+  gap: 20px;
 }
 
-.workflow-step-chip {
-  padding: 3px 9px;
-  font-size: 10.5px;
-}
-
-/* Réduction de la densité de la sidebar */
-.app-sidebar {
-  width: 240px;
-  padding: 18px 12px;
-}
-
-.sidebar-nav-link {
-  padding: 9px 12px;
-}
-
-/* Largeur de lecture cohérente pour les gros écrans */
 .app-content-scroll > * {
   width: 100%;
   max-width: 1480px;
@@ -2105,21 +2156,374 @@ button {
   margin-right: auto;
 }
 
-/* ==========================================================================
-   RESPONSIVE — STRUCTURE
-   ========================================================================== */
+/* Réduit la hauteur des bandeaux persistants. */
+.test-version-banner {
+  min-height: 42px;
+  padding: 6px 20px;
+  gap: 12px;
+}
 
+.actor-nav-pill {
+  padding: 5px 12px;
+}
+
+.workflow-step-banner {
+  min-height: 38px;
+  padding: 5px 20px;
+  gap: 12px;
+}
+
+.workflow-step-chip {
+  padding: 3px 9px;
+}
+
+/* --------------------------------------------------------------------------
+   3. COHÉRENCE DES BOUTONS
+   -------------------------------------------------------------------------- */
+.btn-primary-green,
+.btn-report-quick {
+  background: var(--ui-success);
+}
+
+.btn-primary-green:hover,
+.btn-report-quick:hover {
+  background: var(--ui-success-hover);
+}
+
+.btn-primary-green,
+.btn-default-outline,
+.btn-report-quick,
+.btn-support-issue {
+  min-height: 38px;
+}
+
+.btn-default-outline {
+  background: transparent;
+}
+
+.btn-support-issue {
+  border-color: var(--ui-success);
+  color: var(--ui-success);
+}
+
+/* Focus clavier visible et homogène. */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid var(--ui-focus);
+  outline-offset: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   4. DASHBOARD CITOYEN
+   -------------------------------------------------------------------------- */
+.citizen-welcome-hero {
+  padding: 24px 28px;
+}
+
+.citizen-reports-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.citizen-report-card {
+  min-width: 0;
+  padding: 14px;
+  gap: 14px;
+  align-items: stretch;
+}
+
+.report-thumb-img {
+  width: 104px;
+  height: 104px;
+}
+
+.report-card-info {
+  min-width: 0;
+}
+
+.report-title-text {
+  font-size: 14px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.report-loc-time {
+  flex-wrap: wrap;
+}
+
+.citizen-report-card .status-tag {
+  flex-shrink: 0;
+}
+
+/* --------------------------------------------------------------------------
+   5. DASHBOARD ADMIN / AGENT
+   -------------------------------------------------------------------------- */
+.admin-kpi-grid {
+  gap: 14px;
+}
+
+.kpi-stat-box {
+  min-width: 0;
+  padding: 16px 18px;
+  gap: 13px;
+}
+
+.kpi-icon-pill {
+  width: 42px;
+  height: 42px;
+  border-radius: 11px;
+}
+
+.kpi-data-content {
+  min-width: 0;
+}
+
+.kpi-label-text {
+  line-height: 1.35;
+}
+
+.admin-middle-row {
+  gap: 18px;
+}
+
+/* Les KPI restent colorés par sens, mais avec moins d'effet visuel. */
+.kpi-icon-pill.red {
+  background: var(--ui-danger-soft);
+  color: var(--ui-danger);
+}
+
+.kpi-icon-pill.orange {
+  background: var(--ui-warning-soft);
+  color: var(--ui-warning);
+}
+
+.kpi-icon-pill.green {
+  background: var(--ui-success-soft);
+  color: var(--ui-success);
+}
+
+.kpi-icon-pill.gray {
+  background: var(--ui-neutral-soft);
+  color: var(--text-muted);
+}
+
+/* --------------------------------------------------------------------------
+   6. STATUTS
+   -------------------------------------------------------------------------- */
+.status-tag {
+  padding: 4px 9px;
+  font-size: 10.5px;
+}
+
+/* Palette plus calme, tout en gardant la signification des statuts. */
+.status-tag.nouveau,
+.status-tag.received {
+  background: var(--ui-danger-soft);
+  color: var(--ui-danger);
+}
+
+.status-tag.en_cours,
+.status-tag.progress {
+  background: var(--ui-warning-soft);
+  color: var(--ui-warning);
+}
+
+.status-tag.pris_en_charge,
+.status-tag.assigned,
+.status-tag.awaiting {
+  background: var(--ui-info-soft);
+  color: var(--ui-info);
+}
+
+.status-tag.resolu,
+.status-tag.resolved {
+  background: var(--ui-success-soft);
+  color: var(--ui-success);
+}
+
+/* --------------------------------------------------------------------------
+   7. SIGNALER : FORMULAIRE PLUS LISIBLE
+   -------------------------------------------------------------------------- */
+.form-grid-layout {
+  grid-template-columns: minmax(0, 1.6fr) minmax(260px, 0.8fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.form-card-panel {
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+}
+
+.categories-grid-tiles {
+  gap: 10px;
+}
+
+.cat-tile-btn {
+  min-height: 96px;
+  padding: 14px 10px;
+}
+
+.upload-dropzone {
+  min-height: 150px;
+}
+
+.priority-selector-grid {
+  gap: 7px;
+}
+
+/* Stepper : plus lisible, moins dominant. */
+.wizard-stepper-header {
+  max-width: 900px;
+  margin: 0 auto 20px;
+  padding: 0 28px;
+}
+
+.wizard-stepper-header::before {
+  left: 48px;
+  right: 48px;
+}
+
+.step-circle {
+  width: 32px;
+  height: 32px;
+}
+
+.step-label {
+  font-size: 10.5px;
+  text-align: center;
+}
+
+/* --------------------------------------------------------------------------
+   8. TABLEAUX : DESKTOP PROPRE, MOBILE SCROLLABLE
+   -------------------------------------------------------------------------- */
+.table-container,
+.data-table-container,
+.clean-table-container {
+  min-width: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.clean-data-table {
+  min-width: 760px;
+}
+
+.clean-data-table th {
+  padding: 10px 12px;
+}
+
+.clean-data-table td {
+  padding: 11px 12px;
+}
+
+.clean-data-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+/* --------------------------------------------------------------------------
+   9. ENCADRÉS TECHNIQUES : UNE SEULE LOGIQUE DE COULEUR
+   -------------------------------------------------------------------------- */
+.inspection-report-box {
+  border-color: var(--inspection-accent);
+}
+
+.inspection-report-box::before {
+  background-color: var(--inspection-accent);
+}
+
+.inspection-title-badge {
+  color: var(--inspection-accent);
+}
+
+.poste-depot-card {
+  border-color: var(--depot-accent);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--depot-accent) 6%, transparent),
+    color-mix(in srgb, var(--depot-accent) 12%, transparent)
+  );
+}
+
+.poste-depot-header,
+.poste-depot-item i,
+.poste-depot-item svg {
+  color: var(--depot-accent);
+}
+
+/* --------------------------------------------------------------------------
+   10. AUTORISATION / MODALES / NOTIFICATIONS
+   -------------------------------------------------------------------------- */
+.authorization-box {
+  padding: 13px 16px;
+}
+
+.modal-card-dialog {
+  max-width: 680px;
+}
+
+.modal-dialog-header {
+  padding: 16px 20px;
+}
+
+.modal-dialog-body {
+  padding: 20px;
+}
+
+.notification-item-card {
+  padding: 12px 16px;
+}
+
+/* --------------------------------------------------------------------------
+   11. AUTHENTIFICATION : MOINS "SAAS"
+   -------------------------------------------------------------------------- */
+.auth-page-wrapper {
+  padding: 20px;
+}
+
+.auth-container-card {
+  max-width: 900px;
+  grid-template-columns: 0.9fr 1.1fr;
+  border-radius: 18px;
+}
+
+.auth-left-branding {
+  padding: 34px 30px;
+}
+
+.auth-right-form-pane {
+  padding: 32px 30px;
+  gap: 16px;
+}
+
+.auth-hero-text h2 {
+  font-size: 25px;
+}
+
+.auth-demo-bar {
+  padding: 12px;
+}
+
+/* --------------------------------------------------------------------------
+   12. RESPONSIVE TABLETTE
+   -------------------------------------------------------------------------- */
 @media (max-width: 1100px) {
+  .app-sidebar {
+    width: 220px;
+  }
+
   .app-topbar {
     padding: 0 18px;
   }
 
   .app-content-scroll {
-    padding: 20px 20px 28px;
+    padding: 20px 20px 26px;
   }
 
   .topbar-title {
-    font-size: 18px;
+    font-size: 17px;
   }
 
   .role-pill-indicator {
@@ -2127,16 +2531,27 @@ button {
   }
 
   .test-version-banner {
-    padding: 7px 16px;
+    padding: 6px 14px;
+  }
+
+  .form-grid-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .form-grid-layout > * {
+    width: 100%;
   }
 }
 
+/* --------------------------------------------------------------------------
+   13. RESPONSIVE MOBILE
+   -------------------------------------------------------------------------- */
 @media (max-width: 768px) {
-  /* Sur mobile, la page doit être une vraie interface verticale. */
   html,
   body,
   #app {
     min-width: 0;
+    width: 100%;
   }
 
   .app-container-fluid {
@@ -2147,11 +2562,9 @@ button {
   .app-sidebar {
     width: 100%;
     height: auto;
-    max-height: none;
-    padding: 8px 10px;
+    padding: 7px 10px;
     border-right: 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    flex-shrink: 0;
   }
 
   .sidebar-logo-brand,
@@ -2163,7 +2576,7 @@ button {
     flex-direction: row;
     gap: 6px;
     overflow-x: auto;
-    padding: 2px 0;
+    padding: 1px 0;
     scrollbar-width: none;
   }
 
@@ -2172,22 +2585,22 @@ button {
   }
 
   .sidebar-nav-item {
-    flex: 0 0 auto;
     width: auto;
+    flex: 0 0 auto;
   }
 
   .sidebar-nav-link {
     width: auto;
-    min-height: 38px;
-    padding: 8px 11px;
+    min-height: 37px;
+    padding: 8px 10px;
     white-space: nowrap;
-    font-size: 12px;
+    font-size: 11.5px;
   }
 
   .sidebar-nav-link i,
   .sidebar-nav-link svg {
-    width: 16px;
-    font-size: 14px;
+    width: 15px;
+    font-size: 13px;
   }
 
   .nav-badge-pill {
@@ -2201,19 +2614,19 @@ button {
 
   .app-topbar {
     height: auto;
-    min-height: 58px;
-    padding: 10px 14px;
-    gap: 10px;
-    align-items: center;
+    min-height: 56px;
+    padding: 9px 12px;
+    gap: 8px;
   }
 
   .topbar-left {
-    min-width: 0;
     flex: 1;
+    min-width: 0;
   }
 
   .topbar-title {
-    font-size: 16px;
+    max-width: 100%;
+    font-size: 15px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -2221,20 +2634,11 @@ button {
 
   .topbar-right-controls {
     flex-shrink: 0;
-    gap: 6px;
+    gap: 5px;
   }
 
   .region-select-badge,
   .role-switcher-badge {
-    display: none;
-  }
-
-  .btn-report-quick {
-    padding: 8px 11px;
-    font-size: 12px;
-  }
-
-  .btn-report-quick span {
     display: none;
   }
 
@@ -2243,13 +2647,47 @@ button {
     height: 34px;
   }
 
-  .app-content-scroll {
-    padding: 16px 14px 24px;
-    gap: 16px;
+  .btn-report-quick {
+    min-height: 34px;
+    padding: 7px 10px;
+    font-size: 11.5px;
+  }
+
+  .btn-report-quick span {
+    display: none;
+  }
+
+  .test-version-banner {
+    padding: 6px 10px;
+    overflow-x: auto;
+  }
+
+  .test-version-label-box {
+    flex-shrink: 0;
+  }
+
+  .test-version-title {
+    display: none;
+  }
+
+  .test-version-actors-group {
+    flex: 1;
+    overflow-x: auto;
+    justify-content: flex-start;
+    scrollbar-width: none;
+  }
+
+  .test-version-actors-group::-webkit-scrollbar {
+    display: none;
+  }
+
+  .actor-nav-pill {
+    padding: 6px 9px;
+    font-size: 10.5px;
   }
 
   .workflow-step-banner {
-    padding: 6px 12px;
+    padding: 5px 10px;
   }
 
   .workflow-steps-chain {
@@ -2265,57 +2703,177 @@ button {
     display: none;
   }
 
+  .app-content-scroll {
+    padding: 14px 12px 22px;
+    gap: 14px;
+  }
+
   .citizen-welcome-hero {
-    padding: 22px 18px;
-    border-radius: var(--radius-lg);
+    padding: 20px 17px;
   }
 
   .citizen-welcome-content h2 {
-    font-size: 22px;
-  }
-
-  .admin-kpi-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .admin-middle-row {
-    grid-template-columns: 1fr;
+    font-size: 21px;
+    line-height: 1.25;
   }
 
   .citizen-reports-grid {
     grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .citizen-report-card {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .report-thumb-img {
+    width: 88px;
+    height: 88px;
+  }
+
+  .report-title-text {
+    font-size: 13.5px;
+  }
+
+  .admin-kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .admin-middle-row {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .kpi-stat-box {
+    padding: 13px;
+    gap: 10px;
+  }
+
+  .kpi-icon-pill {
+    width: 38px;
+    height: 38px;
+  }
+
+  .form-card-panel {
+    padding: 16px;
+  }
+
+  .wizard-stepper-header {
+    overflow-x: auto;
+    justify-content: flex-start;
+    gap: 34px;
+    padding: 0 10px 4px;
+    margin-bottom: 16px;
+    scrollbar-width: none;
+  }
+
+  .wizard-stepper-header::-webkit-scrollbar {
+    display: none;
+  }
+
+  .wizard-stepper-header::before {
+    left: 42px;
+    right: 42px;
+  }
+
+  .wizard-step-node {
+    flex: 0 0 90px;
+  }
+
+  .categories-grid-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cat-tile-btn {
+    min-height: 86px;
+  }
+
+  .priority-selector-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .inspection-content-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .inspection-photo-thumb {
+    height: 160px;
+  }
+
+  .authorization-box {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .auth-page-wrapper {
+    align-items: flex-start;
+    padding: 12px;
+  }
+
+  .auth-container-card {
+    grid-template-columns: 1fr;
+    margin: auto 0;
+  }
+
+  .auth-left-branding {
+    padding: 24px 20px;
+  }
+
+  .auth-right-form-pane {
+    padding: 22px 18px;
+  }
+
+  .auth-hero-text h2 {
+    font-size: 22px;
+  }
+
+  .auth-features-list {
+    gap: 8px;
+  }
+
+  .auth-demo-buttons-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .clean-data-table {
+    min-width: 720px;
+  }
+
+  .modal-overlay-bg {
+    padding: 10px;
+  }
+
+  .modal-card-dialog {
+    max-height: calc(100vh - 20px);
+    border-radius: 16px;
+  }
+
+  .modal-dialog-body {
+    padding: 16px;
+  }
+
+  .app-toast-alert {
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    justify-content: center;
+    text-align: center;
   }
 }
 
 @media (max-width: 480px) {
-  .test-version-banner {
-    padding: 6px 10px;
-  }
-
-  .test-version-title {
-    display: none;
-  }
-
-  .test-version-actors-group {
-    width: 100%;
-    justify-content: space-between;
-  }
-
-  .actor-nav-pill {
-    padding: 6px 9px;
-    font-size: 11px;
-  }
-
   .app-topbar {
-    padding: 9px 10px;
-  }
-
-  .topbar-title {
-    font-size: 15px;
+    padding: 8px 9px;
   }
 
   .app-content-scroll {
-    padding: 12px 10px 20px;
+    padding: 10px 9px 18px;
+  }
+
+  .topbar-title {
+    font-size: 14px;
   }
 
   .admin-kpi-grid {
@@ -2323,6 +2881,43 @@ button {
   }
 
   .citizen-welcome-hero {
-    padding: 18px 16px;
+    padding: 18px 15px;
+  }
+
+  .citizen-report-card {
+    display: grid;
+    grid-template-columns: 76px minmax(0, 1fr);
+  }
+
+  .report-thumb-img {
+    width: 76px;
+    height: 76px;
+  }
+
+  .categories-grid-tiles {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .cat-tile-btn {
+    min-height: 78px;
+    padding: 10px 7px;
+  }
+
+  .cat-tile-btn i,
+  .cat-tile-btn svg {
+    font-size: 19px;
+  }
+
+  .cat-tile-btn span {
+    font-size: 10.5px;
+  }
+
+  .wizard-stepper-header {
+    gap: 24px;
+  }
+
+  .wizard-step-node {
+    flex-basis: 82px;
   }
 }
