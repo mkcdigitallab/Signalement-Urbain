@@ -1772,7 +1772,14 @@ app.addEventListener('click', (event) => {
     return;
   }
   
-  if (action === 'toggle-my-reports') {\n    if (target.closest('.citizen-track-button')) return;\n    state.myReportsExpanded = !state.myReportsExpanded;\n    render();\n    return;\n  }\n  \n  if (action === 'open-detail') {
+  if (action === 'toggle-my-reports') {
+    if (target.closest('.citizen-track-button')) return;
+    state.myReportsExpanded = !state.myReportsExpanded;
+    render();
+    return;
+  }
+  
+  if (action === 'open-detail') {
     openReportDetailsModal(target.dataset.id);
     return;
   }
