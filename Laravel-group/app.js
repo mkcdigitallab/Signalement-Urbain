@@ -721,149 +721,57 @@ function citizenDashboardView() {
 
 function citizenWizardView() {
   const draft = state.draft;
-
-  return `
-    <div style="max-width:960px; margin:0 auto; width:100%;">
-      <!-- Stepper Header Moderne -->
-      <div class="wizard-stepper-header">
-        <div class="wizard-step-node completed">
-          <div class="step-circle">${icon('check', 14)}</div>
-          <span class="step-label">1. Localisation</span>
-        </div>
-        <div class="wizard-step-node active">
-          <div class="step-circle">2</div>
-          <span class="step-label">2. Description</span>
-        </div>
-        <div class="wizard-step-node">
-          <div class="step-circle">3</div>
-          <span class="step-label">3. Photo & Danger</span>
-        </div>
-        <div class="wizard-step-node">
-          <div class="step-circle">4</div>
-          <span class="step-label">4. Transmission</span>
-        </div>
+  const step = Math.min(4, Math.max(1, state.activeStep || 1));
+  const steps = [
+    { number: 1, label: 'Localisation' },
+    { number: 2, label: 'Problème' },
+    { number: 3, label: 'Photo & urgence' },
+    { number: 4, label: 'Vérification' }
+  ];
+  const content = {
+    1: `
+      <div class="report-step-intro"><span class="report-step-kicker">Étape 1 sur 4</span><h2>Où se trouve le problème ?</h2><p>Une adresse précise aide le bon service à intervenir plus vite.</p></div>
+      <div class="report-form-stack">
+        <div class="auth-form-group"><label class="auth-label">Région</label><select class="auth-select" id="draft-region">${regionsSenegal.map(r => `<option value="${r}" ${r === (draft.region || state.region) ? 'selected' : ''}>${r}</option>`).join('')}</select></div>
+        <div class="auth-form-group"><label class="auth-label">Adresse, quartier ou repère <span class="field-required">*</span></label><input class="auth-input" id="draft-location" required placeholder="Ex. Avenue Cheikh Anta Diop, près de la pharmacie" value="${escapeHtml(draft.location)}"></div>
+        <button type="button" class="report-gps-card" data-action="get-gps"><span class="report-gps-icon">${icon('locate-fixed',19)}</span><span><strong>Utiliser ma position</strong><small>Détecter automatiquement l'endroit où vous êtes</small></span>${icon('chevron-right',17)}</button>
+        ${state.coordinates ? `<div class="report-location-confirmed">${icon('check-circle-2',16)} Position enregistrée : ${escapeHtml(state.coordinates)}</div>` : ''}
+      </div>`,
+    2: `
+      <div class="report-step-intro"><span class="report-step-kicker">Étape 2 sur 4</span><h2>Qu'est-ce qui ne va pas ?</h2><p>Choisissez une catégorie puis décrivez simplement ce que vous avez constaté.</p></div>
+      <div class="report-form-stack">
+        <div><label class="auth-label">Catégorie <span class="field-required">*</span></label><div class="categories-grid-tiles report-category-grid">${categories.map(cat => `<button type="button" class="cat-tile-btn ${draft.category === cat.name ? 'selected' : ''}" data-action="select-category" data-cat="${cat.name}">${icon(cat.icon,19)}<span>${cat.name}</span></button>`).join('')}</div></div>
+        <div class="auth-form-group"><label class="auth-label">Titre du problème <span class="field-required">*</span></label><input class="auth-input" id="draft-title" required placeholder="Ex. Lampadaire éteint" value="${escapeHtml(draft.title)}"></div>
+        <div class="auth-form-group"><label class="auth-label">Que se passe-t-il ? <span class="field-required">*</span></label><textarea class="auth-input" id="draft-description" rows="5" required placeholder="Décrivez le problème, le danger éventuel et depuis quand vous l'avez remarqué.">${escapeHtml(draft.description)}</textarea></div>
+      </div>`,
+    3: `
+      <div class="report-step-intro"><span class="report-step-kicker">Étape 3 sur 4</span><h2>Ajoutez une preuve et indiquez l'urgence</h2><p>Une photo aide les équipes à comprendre la situation avant de se déplacer.</p></div>
+      <div class="report-form-stack">
+        <label class="upload-dropzone report-upload-zone">${state.photo ? `<img src="${state.photo}" alt="Aperçu du signalement"><span class="report-upload-success">${icon('image-check',16)} Photo ajoutée · cliquez pour remplacer</span>` : `<span class="report-upload-icon">${icon('camera',30)}</span><strong>Ajouter une photo</strong><small>JPG ou PNG · 10 Mo maximum · facultatif</small>`}<input type="file" accept="image/*" onchange="window.handlePhotoUpload(event)"></label>
+        <div><label class="auth-label">Niveau d'urgence perçu</label><div class="priority-selector-grid report-priority-grid">${['Faible','Moyenne','Urgente'].map(p => `<button type="button" class="priority-choice-btn ${p.toLowerCase()} ${draft.priority === p ? 'selected' : ''}" data-action="select-priority" data-priority="${p}"><strong>${p}</strong><small>${p === 'Urgente' ? 'Danger immédiat' : p === 'Moyenne' ? 'Gêne importante' : 'À traiter normalement'}</small></button>`).join('')}</div></div>
+      </div>`,
+    4: `
+      <div class="report-step-intro"><span class="report-step-kicker">Étape 4 sur 4</span><h2>Tout est prêt ?</h2><p>Vérifiez les informations avant d'envoyer votre signalement à la mairie.</p></div>
+      <div class="report-review-card">
+        <div class="report-review-row"><span>Lieu</span><strong>${escapeHtml(draft.location || 'Non renseigné')} · ${escapeHtml(draft.region || state.region)}</strong></div>
+        <div class="report-review-row"><span>Catégorie</span><strong>${escapeHtml(draft.category)}</strong></div>
+        <div class="report-review-row"><span>Problème</span><strong>${escapeHtml(draft.title || 'Non renseigné')}</strong></div>
+        <div class="report-review-row report-review-description"><span>Description</span><p>${escapeHtml(draft.description || 'Non renseignée')}</p></div>
+        <div class="report-review-row"><span>Urgence</span><span class="priority-review ${draft.priority.toLowerCase()}">${escapeHtml(draft.priority)}</span></div>
+        <div class="report-review-row"><span>Photo</span><strong>${state.photo ? 'Ajoutée' : 'Aucune photo'}</strong></div>
       </div>
-      
-      <form id="wizard-report-form" onsubmit="event.preventDefault(); window.submitNewReport();">
-        <div class="form-grid-layout">
-          <div style="display:flex; flex-direction:column; gap:16px;">
-            <!-- Étape 1 : Choisir la Catégorie -->
-            <div class="form-card-panel">
-              <h3 style="font-size:15px; font-weight:800; color:var(--text-main); margin-bottom:8px;">
-                1. Nature du problème
-              </h3>
-              <p style="font-size:12.5px; color:var(--text-muted); margin-bottom:12px;">
-                Sélectionnez le domaine concerné pour aiguiller directement les services municipaux compétents.
-              </p>
-              
-              <div class="categories-grid-tiles">
-                ${categories.map(cat => `
-                  <button type="button" class="cat-tile-btn ${draft.category === cat.name ? 'selected' : ''}" data-action="select-category" data-cat="${cat.name}">
-                    ${icon(cat.icon, 20)}
-                    <span>${cat.name}</span>
-                  </button>
-                `).join('')}
-              </div>
-              
-              <div class="auth-form-group">
-                <label class="auth-label">Titre concis du problème</label>
-                <input class="auth-input" type="text" id="draft-title" required placeholder="Ex. : Lampadaire éteint au croisement" value="${escapeHtml(draft.title)}">
-              </div>
-              
-              <div class="auth-form-group">
-                <label class="auth-label">Description détaillée & contexte</label>
-                <textarea class="auth-input" id="draft-description" rows="4" required placeholder="Décrivez le danger, la localisation exacte et depuis quand le problème persiste...">${escapeHtml(draft.description)}</textarea>
-              </div>
-            </div>
-            
-            <!-- Étape 2 : Photo du Problème -->
-            <div class="form-card-panel">
-              <h3 style="font-size:15px; font-weight:800; color:var(--text-main); margin-bottom:8px;">
-                2. Photo ou preuve visuelle
-              </h3>
-              <p style="font-size:12.5px; color:var(--text-muted); margin-bottom:12px;">
-                Une photo claire permet à l'agent technique d'inspecter et préparer le matériel adapté.
-              </p>
-              
-              <label class="upload-dropzone">
-                ${state.photo ? `
-                  <img src="${state.photo}" alt="Aperçu signalement">
-                  <span style="font-size:12px; font-weight:700; color:var(--primary-green); margin-top:8px;">
-                    ${icon('refresh-cw', 13)} Changer la photo
-                  </span>
-                ` : `
-                  <div style="font-size:32px; color:var(--primary-green);">
-                    ${icon('camera', 36)}
-                  </div>
-                  <strong style="font-size:13px; color:var(--text-main);">Prendre une photo ou importer un fichier</strong>
-                  <small style="font-size:11px; color:var(--text-muted);">Format JPG, PNG · Max 10 Mo</small>
-                `}
-                <input type="file" accept="image/*" onchange="window.handlePhotoUpload(event)">
-              </label>
-            </div>
-          </div>
-          
-          <!-- Colonne Latérale : Géolocalisation & Priorité -->
-          <div style="display:flex; flex-direction:column; gap:16px;">
-            <div class="form-card-panel">
-              <h3 style="font-size:15px; font-weight:800; color:var(--text-main); margin-bottom:12px;">
-                3. Localisation au Sénégal
-              </h3>
-              
-              <div class="auth-form-group">
-                <label class="auth-label">Région</label>
-                <select class="auth-select" id="draft-region">
-                  ${regionsSenegal.map(r => `<option value="${r}" ${r === state.region ? 'selected' : ''}>${r}</option>`).join('')}
-                </select>
-              </div>
-              
-              <div class="auth-form-group">
-                <label class="auth-label">Adresse, quartier ou repère</label>
-                <input class="auth-input" type="text" id="draft-location" required placeholder="Ex. : Avenue Cheikh Anta Diop, près pharmacie" value="${escapeHtml(draft.location)}">
-              </div>
-              
-              <button type="button" class="btn-default-outline" style="width:100%; justify-content:center; margin-top:6px;" data-action="get-gps">
-                ${icon('map-pin', 14)} Position GPS automatique
-              </button>
-              
-              ${state.coordinates ? `
-                <div style="font-size:11.5px; color:var(--primary-green); font-weight:700; margin-top:8px; display:flex; align-items:center; gap:6px;">
-                  ${icon('check-circle', 14)} Coordonnées : ${state.coordinates}
-                </div>
-              ` : ''}
-              
-              <div style="margin-top:16px; padding-top:16px; border-top:1px solid var(--border-color);">
-                <label class="auth-label">Niveau d'urgence perçu</label>
-                <div class="priority-selector-grid">
-                  ${['Faible', 'Moyenne', 'Urgente'].map(p => `
-                    <button type="button" class="priority-choice-btn ${p.toLowerCase()} ${draft.priority === p ? 'selected' : ''}" data-action="select-priority" data-priority="${p}">
-                      ${p}
-                    </button>
-                  `).join('')}
-                </div>
-              </div>
-              
-              <button type="submit" class="btn-primary-green" style="width:100%; justify-content:center; margin-top:20px; padding:12px;">
-                ${icon('send', 15)} Envoyer le signalement à la Mairie
-              </button>
-            </div>
-            
-            <div style="background:var(--primary-green-light); border:1px solid rgba(0,135,90,0.25); border-radius:var(--radius-lg); padding:16px; font-size:12px; color:var(--text-main); line-height:1.5;">
-              <strong style="display:flex; align-items:center; gap:6px; color:var(--primary-green); margin-bottom:6px;">
-                ${icon('shield-check', 16)} Engagement SunuGox
-              </strong>
-              Votre signalement est automatiquement transmis au bureau technique régional compétent. Vous recevrez un SMS et une notification à chaque étape de résolution.
-            </div>
-          </div>
-        </div>
+      <div class="report-trust-note">${icon('shield-check',18)}<span><strong>Vos informations sont prêtes à être transmises.</strong><small>Vous pourrez suivre l'avancement depuis « Mes signalements ».</small></span></div>`
+  };
+  return `
+    <section class="report-wizard-shell">
+      <div class="report-wizard-top"><button type="button" class="btn-default-outline" data-action="navigate" data-view="dashboard">${icon('arrow-left',15)} Retour</button><div><span class="citizen-section-kicker">${icon('plus-circle',14)} Nouveau signalement</span><p>Quelques étapes simples, puis c'est transmis.</p></div></div>
+      <div class="report-stepper">${steps.map((s,i)=>`<div class="report-stepper-item ${step===s.number?'active':''} ${step>s.number?'done':''}"><span class="report-stepper-circle">${step>s.number?icon('check',13):s.number}</span><span>${s.label}</span></div>${i<3?'<div class="report-stepper-line"></div>':''}`).join('')}</div>
+      <form id="wizard-report-form" class="report-wizard-card" onsubmit="event.preventDefault(); window.handleWizardNext();">
+        <div class="report-wizard-content">${content[step]}</div>
+        <div class="report-wizard-footer"><span class="report-step-counter">Étape ${step} / 4</span><div class="report-wizard-actions">${step>1?'<button type="button" class="btn-default-outline" data-action="wizard-back">'+icon('arrow-left',15)+' Précédent</button>':''}${step<4?`<button type="submit" class="btn-primary-green">${step===1?'Continuer':step===2?'Ajouter une photo':'Vérifier le signalement'} ${icon('arrow-right',15)}</button>`:`<button type="button" class="btn-primary-green" data-action="submit-report">${icon('send',15)} Envoyer le signalement</button>`}</div></div>
       </form>
-    </div>
-  `;
+    </section>`;
 }
-
-// ==========================================================================
-// VUE OBJETS PERDUS & RETROUVÉS (AVEC POSTE DE DÉPÔT / CNI)
-// ==========================================================================
 function lostItemsView() {
   const filtered = state.items.filter(item => {
     const matchesSearch = `${item.name} ${item.description} ${item.place} ${item.station}`.toLowerCase().includes(state.lostSearch.toLowerCase());
@@ -1732,6 +1640,24 @@ window.handlePhotoUpload = function(event) {
   }
 };
 
+window.handleWizardNext = function() {
+  const step = state.activeStep || 1;
+  if (step === 1) {
+    const location = document.querySelector('#draft-location')?.value.trim();
+    if (!location) return notify('Indiquez une adresse, un quartier ou un repère.', 'warning');
+    state.draft.region = document.querySelector('#draft-region')?.value || state.region;
+    state.draft.location = location;
+  } else if (step === 2) {
+    const title = document.querySelector('#draft-title')?.value.trim();
+    const desc = document.querySelector('#draft-description')?.value.trim();
+    if (!title || !desc) return notify('Ajoutez un titre et une description du problème.', 'warning');
+    state.draft.title = title;
+    state.draft.description = desc;
+  }
+  state.activeStep = Math.min(4, step + 1);
+  render();
+};
+
 window.submitNewReport = function() {
   const title = document.querySelector('#draft-title')?.value.trim();
   const desc = document.querySelector('#draft-description')?.value.trim();
@@ -1773,6 +1699,7 @@ window.submitNewReport = function() {
     priority: 'Moyenne'
   };
   state.view = 'dashboard';
+  state.activeStep = 1;
   render();
   notify(`Signalement ${newId} transmis avec succès à la Mairie !`);
 };
@@ -1861,6 +1788,16 @@ app.addEventListener('click', (event) => {
     return;
   }
   
+  if (action === 'wizard-back') {
+    state.activeStep = Math.max(1, (state.activeStep || 1) - 1);
+    render();
+    return;
+  }
+  if (action === 'submit-report') {
+    window.submitNewReport();
+    return;
+  }
+
   // Wizard selections
   if (action === 'select-category') {
     state.draft.category = target.dataset.cat;
