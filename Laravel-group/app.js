@@ -915,141 +915,76 @@ function lostItemsView() {
 // DASHBOARD AGENT TERRAIN (AMADOU SOW)
 // ==========================================================================
 function agentDashboardView() {
-  const assignedReports = state.reports.filter(r => r.service === 'Voirie' || r.service === 'Assainissement');
-  const awaitingInspection = assignedReports.filter(r => r.status === 'assigned' || r.status === 'inspection');
-  const inProgress = assignedReports.filter(r => r.status === 'progress');
+  const assignedReports = state.reports
+    .filter(r => r.service === 'Voirie' || r.service === 'Assainissement')
+    .sort((a,b) => ({Urgente:0,Moyenne:1,Faible:2}[a.priority] ?? 9) - ({Urgente:0,Moyenne:1,Faible:2}[b.priority] ?? 9));
+  const active = assignedReports.filter(r => ['assigned','inspection','progress'].includes(r.status));
+  const toInspect = active.filter(r => r.status === 'assigned');
+  const toReport = active.filter(r => r.status === 'inspection');
+  const inWork = active.filter(r => r.status === 'progress');
+  const done = assignedReports.filter(r => ['resolved','rejected'].includes(r.status));
+  const urgent = active.filter(r => r.priority === 'Urgente');
+
+  const action = r => r.status === 'assigned'
+    ? `<button class="btn-primary-green agent-mission-action" data-action="agent-start-inspection" data-id="${r.id}">${icon('clipboard-check',14)} Démarrer l’inspection</button>`
+    : r.status === 'inspection'
+      ? `<button class="btn-primary-green agent-mission-action" data-action="agent-submit-report" data-id="${r.id}">${icon('file-check-2',14)} Rédiger le rapport</button>`
+      : r.status === 'progress'
+        ? `<button class="btn-primary-green agent-mission-action" data-action="agent-resolve" data-id="${r.id}">${icon('check-circle',14)} Clôturer la mission</button>`
+        : `<span class="agent-completed-label">${icon('check-circle-2',15)} Mission terminée</span>`;
+
+  const card = r => `
+    <article class="agent-work-card">
+      <div class="agent-work-main">
+        <div class="agent-work-image"><img src="${r.photo}" alt="${escapeHtml(r.title)}"><span class="status-tag ${statusClasses[r.status]}">${statusLabels[r.status]}</span></div>
+        <div class="agent-work-content">
+          <div class="agent-work-meta"><span>${escapeHtml(r.id)}</span><span class="agent-priority priority-${r.priority.toLowerCase()}">${escapeHtml(r.priority)}</span></div>
+          <h3>${escapeHtml(r.title)}</h3>
+          <p class="agent-work-location">${icon('map-pin',13)} ${escapeHtml(r.location)}</p>
+          <p class="agent-work-category">${icon('layers-3',12)} ${escapeHtml(r.category)} · ${escapeHtml(r.service)}</p>
+        </div>
+        <div class="agent-work-action">${action(r)}<button class="agent-secondary-action" data-action="open-detail" data-id="${r.id}">${icon('eye',14)} Détails</button></div>
+      </div>
+      ${r.status === 'inspection' ? `<div class="agent-next-step"><span class="agent-next-step-icon">${icon('clipboard-list',15)}</span><div><strong>Prochaine étape</strong><small>Documenter le constat terrain puis transmettre le rapport à la mairie.</small></div></div>` : ''}
+      ${r.status === 'progress' ? `<div class="agent-next-step is-green"><span class="agent-next-step-icon">${icon('wrench',15)}</span><div><strong>Intervention autorisée</strong><small>Vérifiez le résultat sur place avant de marquer le dossier résolu.</small></div></div>` : ''}
+      ${r.report ? `<div class="agent-inspection-summary"><div class="agent-inspection-summary-head"><span>${icon('clipboard-check',14)} Dernier constat enregistré</span><small>${r.authorized ? 'Autorisation disponible' : 'Rapport terrain'}</small></div><p>${escapeHtml(r.report)}</p></div>` : ''}
+    </article>`;
 
   return `
-    <div style="display:flex; flex-direction:column; gap:22px;">
-      <!-- Header de Mission Agent -->
-      <div class="agent-mission-header">
-        <div>
-          <span style="font-size:11.5px; font-weight:800; color:#fdef42; text-transform:uppercase; letter-spacing:1px;">
-            ${icon('shield', 13)} Équipe Technique Voirie & Réseaux
-          </span>
-          <h2 style="font-size:24px; font-weight:800; margin-top:4px;">
-            Missions & Ordres d’Intervention
-          </h2>
-          <p style="font-size:13.5px; color:rgba(255,255,255,0.85); margin-top:2px;">
-            Agent référent : <strong>Amadou Sow</strong> · District Dakar Centre
-          </p>
-        </div>
-        
-        <div style="display:flex; gap:16px;">
-          <div style="text-align:right;">
-            <div style="font-size:24px; font-weight:800; color:#fdef42;">${awaitingInspection.length}</div>
-            <div style="font-size:11px; color:rgba(255,255,255,0.7);">À inspecter</div>
-          </div>
-          <div style="text-align:right;">
-            <div style="font-size:24px; font-weight:800; color:#4ade80;">${inProgress.length}</div>
-            <div style="font-size:11px; color:rgba(255,255,255,0.7);">Travaux autorisés</div>
-          </div>
-        </div>
+    <section class="agent-dashboard">
+      <header class="agent-dashboard-hero">
+        <div><span class="agent-dashboard-kicker">${icon('map-pin',13)} Terrain · Dakar Centre</span><h1>Bonjour Amadou, voici votre tournée.</h1><p>Priorisez les missions urgentes, inspectez les dossiers affectés et transmettez vos constats depuis le terrain.</p><div class="agent-dashboard-context"><span>${icon('calendar-days',13)} Aujourd’hui · 30 septembre 2026</span><span>${icon('shield-check',13)} Équipe Voirie & Réseaux</span></div></div>
+        <div class="agent-dashboard-hero-focus"><span>À traiter maintenant</span><strong>${urgent.length}</strong><small>mission${urgent.length > 1 ? 's' : ''} urgente${urgent.length > 1 ? 's' : ''}</small></div>
+      </header>
+
+      <section class="agent-kpi-grid">
+        <div class="agent-kpi-card is-alert"><span class="agent-kpi-icon">${icon('siren',18)}</span><div><small>Urgentes</small><strong>${urgent.length}</strong><span>à traiter en priorité</span></div></div>
+        <div class="agent-kpi-card"><span class="agent-kpi-icon">${icon('map',18)}</span><div><small>À inspecter</small><strong>${toInspect.length}</strong><span>visites à effectuer</span></div></div>
+        <div class="agent-kpi-card"><span class="agent-kpi-icon">${icon('clipboard-check',18)}</span><div><small>Rapports à transmettre</small><strong>${toReport.length}</strong><span>constats en attente</span></div></div>
+        <div class="agent-kpi-card is-green"><span class="agent-kpi-icon">${icon('wrench',18)}</span><div><small>Interventions</small><strong>${inWork.length}</strong><span>travaux en cours</span></div></div>
+      </section>
+
+      <div class="agent-dashboard-layout">
+        <main class="agent-route-panel">
+          <div class="agent-section-heading"><div><span class="agent-section-kicker">${icon('route',13)} Feuille de route</span><h2>Missions du jour</h2><p>${active.length} mission${active.length > 1 ? 's' : ''} active${active.length > 1 ? 's' : ''} · triées par priorité.</p></div><span class="agent-route-count">${active.length} actives</span></div>
+          ${active.length ? `<div class="agent-work-list">${active.map(card).join('')}</div>` : `<div class="agent-empty-state">${icon('check-circle-2',22)}<strong>Aucune mission active</strong><span>Votre feuille de route est à jour.</span></div>`}
+          ${done.length ? `<details class="agent-completed-section"><summary>${icon('archive',14)} Missions clôturées (${done.length})</summary><div class="agent-completed-list">${done.map(card).join('')}</div></details>` : ''}
+        </main>
+
+        <aside class="agent-side-panel">
+          <section class="agent-side-card"><div class="agent-side-card-heading"><span>${icon('list-checks',15)} Mon suivi</span></div><div class="agent-progress-list">
+            <div><span><b>À inspecter</b><small>Visite terrain</small></span><strong>${toInspect.length}</strong></div>
+            <div><span><b>Rapports</b><small>À transmettre</small></span><strong>${toReport.length}</strong></div>
+            <div><span><b>Travaux</b><small>En intervention</small></span><strong>${inWork.length}</strong></div>
+            <div><span><b>Terminées</b><small>Historique</small></span><strong>${done.length}</strong></div>
+          </div></section>
+          <section class="agent-side-card agent-field-kit"><div class="agent-side-card-heading"><span>${icon('briefcase-business',15)} Sur le terrain</span></div><ul><li>${icon('camera',14)} Photographier le constat</li><li>${icon('clipboard-list',14)} Décrire les observations</li><li>${icon('map-pin-check',14)} Confirmer le lieu</li><li>${icon('send',14)} Transmettre le rapport</li></ul></section>
+          <section class="agent-side-card agent-priority-card"><div class="agent-side-card-heading"><span>${icon('triangle-alert',15)} Priorité terrain</span></div><p>Une mission <strong>urgente</strong> passe avant les dossiers standards lorsqu’elle concerne un danger pour les usagers.</p><span class="agent-priority-note">${urgent.length} urgente${urgent.length > 1 ? 's' : ''} actuellement</span></section>
+        </aside>
       </div>
-      
-      <!-- Liste des Missions avec Rapport d'inspection & Autorisation Mairie -->
-      <div style="display:flex; flex-direction:column; gap:16px;">
-        <h3 style="font-size:16px; font-weight:800; color:var(--text-main);">
-          Feuille de route opérationnelle
-        </h3>
-        
-        ${assignedReports.map(report => `
-          <div class="agent-mission-card">
-            <div class="agent-mission-top">
-              <div style="display:flex; align-items:center; gap:14px;">
-                <img class="report-thumb-img" src="${report.photo}" alt="" style="width:72px; height:72px;">
-                <div>
-                  <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
-                    <span class="status-tag ${statusClasses[report.status]}">
-                      ${statusLabels[report.status]}
-                    </span>
-                    <span style="font-size:11.5px; font-weight:700; color:var(--text-muted);">
-                      ${report.id} · Priorité ${report.priority}
-                    </span>
-                  </div>
-                  <h4 style="font-size:16px; font-weight:800; color:var(--text-main);">
-                    ${escapeHtml(report.title)}
-                  </h4>
-                  <div style="font-size:12.5px; color:var(--text-muted); display:flex; align-items:center; gap:6px; margin-top:3px;">
-                    ${icon('map-pin', 13)} ${escapeHtml(report.location)}
-                  </div>
-                </div>
-              </div>
-              
-              <div style="display:flex; align-items:center; gap:10px;">
-                ${report.status === 'assigned' ? `
-                  <button class="btn-primary-green" data-action="agent-start-inspection" data-id="${report.id}">
-                    ${icon('clipboard', 14)} Démarrer l’inspection
-                  </button>
-                ` : report.status === 'inspection' ? `
-                  <button class="btn-primary-green" data-action="agent-submit-report" data-id="${report.id}">
-                    ${icon('send', 14)} Rédiger le rapport
-                  </button>
-                ` : report.status === 'progress' ? `
-                  <button class="btn-primary-green" data-action="agent-resolve" data-id="${report.id}">
-                    ${icon('check-circle', 14)} Clôturer & Marquer résolu
-                  </button>
-                ` : `
-                  <span style="font-size:12.5px; font-weight:700; color:#16a34a; display:flex; align-items:center; gap:6px;">
-                    ${icon('check-circle-2', 16)} Mission terminée
-                  </span>
-                `}
-              </div>
-            </div>
-            
-            <!-- Encadré Rapport d'Inspection Technique -->
-            ${report.report ? `
-              <div class="inspection-report-box">
-                <div class="inspection-header">
-                  <div class="inspection-title-badge">
-                    ${icon('clipboard-check', 16)} Rapport d’inspection technique sur site
-                  </div>
-                  <span class="inspection-meta">Validé par l'Agent Amadou Sow</span>
-                </div>
-                
-                <div class="inspection-content-grid">
-                  <div class="inspection-text-details">
-                    <p><strong>Constat de terrain :</strong> ${escapeHtml(report.report)}</p>
-                    <p style="color:var(--text-muted); font-size:11.5px;">Matériel préconisé : Camion benne, bitume à froid 2T, signalisation de sécurité VDN.</p>
-                  </div>
-                  ${report.photo ? `
-                    <img class="inspection-photo-thumb" src="${report.photo}" alt="Inspection photo">
-                  ` : ''}
-                </div>
-              </div>
-            ` : ''}
-            
-            <!-- Encadré Autorisation Mairie (si accordé) -->
-            ${report.authorized ? `
-              <div class="authorization-box">
-                <div class="authorization-stamp">
-                  <div class="authorization-stamp-icon">
-                    ${icon('stamp', 22)}
-                  </div>
-                  <div>
-                    <strong style="color:var(--primary-green); font-size:14px; display:block;">
-                      Arrêté Municipal d'Intervention Validé
-                    </strong>
-                    <span style="font-size:12px; color:var(--text-muted);">
-                      Autorisé par : Mairie Régionale de Dakar · Dossier conforme aux normes d'aménagement
-                    </span>
-                  </div>
-                </div>
-                <div style="font-size:11.5px; font-weight:800; color:var(--primary-green); text-transform:uppercase;">
-                  Feu vert travaux
-                </div>
-              </div>
-            ` : ''}
-          </div>
-        `).join('')}
-      </div>
-    </div>
-  `;
+    </section>`;
 }
 
-// ==========================================================================
-// DASHBOARD ADMINISTRATEUR RÉGIONAL (MAIRIE DE DAKAR & 14 RÉGIONS)
-// ==========================================================================
 function adminDashboardView() {
   const unassigned = state.reports.filter(r => r.status === 'received');
   const awaitingReports = state.reports.filter(r => r.status === 'awaiting');
