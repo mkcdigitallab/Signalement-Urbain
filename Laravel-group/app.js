@@ -1800,6 +1800,10 @@ app.addEventListener('click', (event) => {
 
   // Wizard selections
   if (action === 'select-category') {
+    const titleInput = document.querySelector('#draft-title');
+    const descriptionInput = document.querySelector('#draft-description');
+    if (titleInput) state.draft.title = titleInput.value;
+    if (descriptionInput) state.draft.description = descriptionInput.value;
     state.draft.category = target.dataset.cat;
     render();
     return;
