@@ -1046,7 +1046,7 @@ function adminDashboardView() {
           </div>
           <div class="citizen-search-bar admin-supervision-search">
             ${icon('search', 16)}
-            <input type="search" data-action="admin-search" placeholder="Rechercher un signalement..." value="${escapeHtml(state.query)}">
+            <input type="search" data-action="admin-search" placeholder="Rechercher un signalement..." value="${escapeHtml(state.query)}" oninput="state.query = this.value; render();">
           </div>
           <div class="admin-supervision-list">
             ${recentReports.length ? recentReports.map(report => \`
