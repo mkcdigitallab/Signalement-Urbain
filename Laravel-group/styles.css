@@ -3668,7 +3668,6 @@ select:focus-visible {
 @media(max-width:560px){.report-detail-modal-image{height:160px}.report-detail-modal-status{align-items:flex-start;flex-direction:column}.report-detail-priority{text-align:left}.report-detail-meta-grid{grid-template-columns:1fr}.citizen-report-card .citizen-report-open{padding:0 8px}}
 
 /* Catalogue citoyen — positionnement uniforme du bouton détail */
-.citizen-report-card{height:100%;min-height:0}
 .citizen-report-card .report-card-info{flex:1 1 auto;height:100%;display:flex;flex-direction:column;min-width:0}
 .citizen-report-card .citizen-report-footer{width:100%;margin-top:auto;padding-top:10px;min-height:32px;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:8px}
 .citizen-report-card .btn-support-issue{margin:0;flex:0 0 auto}
