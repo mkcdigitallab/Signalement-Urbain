@@ -782,102 +782,88 @@ function lostItemsView() {
   });
 
   return `
-    <div style="display:flex; flex-direction:column; gap:20px;">
-      <!-- Panneau de recherche & Filtres -->
-      <div class="objets-search-panel">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
+    <section class="lost-items-page">
+      <header class="lost-items-hero">
+        <div>
+          <span class="citizen-section-kicker">${icon('search', 14)} Objets retrouvés & CNI</span>
+          <h2>Retrouvez un objet perdu</h2>
+          <p>Consultez les objets et documents déposés auprès des services publics, puis identifiez le point de retrait avant de vous déplacer.</p>
+        </div>
+        <div class="lost-items-hero-count">
+          <strong>${filtered.length}</strong>
+          <span>résultat${filtered.length !== 1 ? 's' : ''}</span>
+        </div>
+      </header>
+
+      <section class="objets-search-panel lost-items-filters">
+        <div class="lost-items-filter-heading">
           <div>
-            <h3 style="font-size:17px; font-weight:800; color:var(--text-main);">
-              ${icon('search', 18)} Objets Perdus & Cartes Nationales d’Identité (CNI)
-            </h3>
-            <p style="font-size:13px; color:var(--text-muted);">
-              Consultez les pièces d'identité et objets déposés dans les commissariats et mairies du Sénégal.
-            </p>
+            <strong>${icon('filter', 15)} Rechercher dans les objets retrouvés</strong>
+            <span>Nom, type d’objet, lieu ou point de dépôt</span>
           </div>
-          <button class="btn-primary-green" data-action="open-declare-lost">
-            ${icon('plus', 14)} Déclarer une perte
-          </button>
+          <button class="btn-primary-green" data-action="open-declare-lost">${icon('plus', 14)} Déclarer une perte</button>
         </div>
-        
         <div class="objets-search-inputs">
-          <input class="auth-input" type="text" placeholder="Rechercher par nom (ex. S. Ndiaye), objet, lieu..." value="${escapeHtml(state.lostSearch)}" oninput="state.lostSearch = this.value; render();">
-          
-          <select class="auth-select" onchange="state.lostTypeFilter = this.value; render();">
-            <option value="all">Tous les statuts</option>
-            <option value="Retrouvé" ${state.lostTypeFilter === 'Retrouvé' ? 'selected' : ''}>Objets Retrouvés (En poste)</option>
-            <option value="Perdu" ${state.lostTypeFilter === 'Perdu' ? 'selected' : ''}>Signalés Perdus</option>
-          </select>
-          
-          <select class="auth-select" onchange="state.region = this.value; render();">
-            ${regionsSenegal.map(r => `<option value="${r}" ${r === state.region ? 'selected' : ''}>${r}</option>`).join('')}
-          </select>
-          
-          <button class="btn-default-outline" data-action="reset-lost-filter">
-            ${icon('rotate-ccw', 14)} Réinitialiser
-          </button>
+          <label class="lost-filter-field">
+            <span>Recherche</span>
+            <input class="auth-input" type="search" placeholder="Ex. CNI, clés, Sandaga..." value="${escapeHtml(state.lostSearch)}" oninput="state.lostSearch = this.value; render();">
+          </label>
+          <label class="lost-filter-field">
+            <span>Statut</span>
+            <select class="auth-select" onchange="state.lostTypeFilter = this.value; render();">
+              <option value="all">Tous les statuts</option>
+              <option value="Retrouvé" ${state.lostTypeFilter === 'Retrouvé' ? 'selected' : ''}>Objets retrouvés</option>
+              <option value="Perdu" ${state.lostTypeFilter === 'Perdu' ? 'selected' : ''}>Signalés perdus</option>
+            </select>
+          </label>
+          <label class="lost-filter-field">
+            <span>Région</span>
+            <select class="auth-select" onchange="state.region = this.value; render();">
+              ${regionsSenegal.map(r => `<option value="${r}" ${r === state.region ? 'selected' : ''}>${r}</option>`).join('')}
+            </select>
+          </label>
+          <button class="btn-default-outline lost-reset-button" data-action="reset-lost-filter">${icon('rotate-ccw', 14)} Réinitialiser</button>
         </div>
-      </div>
-      
-      <!-- Liste des objets -->
-      <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:18px;">
-        ${filtered.map(item => `
-          <div class="citizen-report-card" style="flex-direction:column; padding:0; overflow:hidden;">
-            <div style="height:150px; position:relative; overflow:hidden; background-color:var(--border-color);">
-              <img src="${item.image}" alt="${escapeHtml(item.name)}" style="width:100%; height:100%; object-fit:cover;">
-              <span class="status-tag ${item.status === 'Retrouvé' ? 'resolu' : 'en_cours'}" style="position:absolute; top:12px; right:12px; box-shadow:var(--shadow-sm);">
-                ${item.status}
-              </span>
-            </div>
-            
-            <div style="padding:18px; display:flex; flex-direction:column; gap:10px; flex:1;">
-              <div>
-                <span style="font-size:11px; font-weight:700; color:var(--primary-green); text-transform:uppercase;">
-                  ${item.id} · ${item.date}
-                </span>
-                <h4 style="font-size:15px; font-weight:800; color:var(--text-main); margin-top:2px;">
-                  ${escapeHtml(item.name)}
-                </h4>
-                <p style="font-size:12.5px; color:var(--text-muted); margin-top:4px; line-height:1.4;">
-                  ${escapeHtml(item.description)}
-                </p>
-                <div style="font-size:12px; color:var(--text-muted); display:flex; align-items:center; gap:6px; margin-top:6px;">
-                  ${icon('map-pin', 12)} Lieu : ${escapeHtml(item.place)}
-                </div>
+      </section>
+
+      <section class="lost-items-results">
+        <div class="lost-items-section-heading">
+          <div><span class="citizen-section-kicker">${icon('package-search', 14)} Catalogue</span><h3>Objets actuellement disponibles</h3></div>
+          <span>${filtered.length} résultat${filtered.length !== 1 ? 's' : ''}</span>
+        </div>
+        <div class="lost-items-grid">
+          ${filtered.length ? filtered.map(item => `
+            <article class="lost-item-card">
+              <div class="lost-item-image" data-action="open-lost-detail" data-id="${item.id}" role="button" tabindex="0" aria-label="Voir le détail de ${escapeHtml(item.name)}">
+                <img src="${item.image}" alt="${escapeHtml(item.name)}">
+                <span class="status-tag ${item.status === 'Retrouvé' ? 'resolu' : 'en_cours'}">${item.status}</span>
+                <span class="lost-item-image-hint">${icon('eye', 13)} Voir le détail</span>
               </div>
-              
-              <!-- Poste de dépôt pour récupération -->
-              ${item.station ? `
-                <div class="poste-depot-card">
-                  <div class="poste-depot-header">
-                    ${icon('building-2', 15)} Poste de dépôt sécurisé
-                  </div>
-                  <div class="poste-depot-details-list">
-                    <div class="poste-depot-item">
-                      ${icon('map-pin', 13)}
-                      <span><strong>Lieu :</strong> ${escapeHtml(item.station)}</span>
+              <div class="lost-item-body">
+                <div class="lost-item-meta"><span>${escapeHtml(item.id)}</span><span>${escapeHtml(item.date)}</span></div>
+                <h4>${escapeHtml(item.name)}</h4>
+                <p class="lost-item-description">${escapeHtml(item.description)}</p>
+                <div class="lost-item-location">${icon('map-pin', 13)}<span>${escapeHtml(item.place)}</span></div>
+                ${item.station ? `
+                  <div class="poste-depot-card">
+                    <div class="poste-depot-header">${icon('building-2', 14)} Point de retrait</div>
+                    <div class="poste-depot-details-list">
+                      <div class="poste-depot-item">${icon('map-pin', 13)}<span>${escapeHtml(item.station)}</span></div>
+                      ${item.contact ? `<div class="poste-depot-item">${icon('phone', 13)}<span>${escapeHtml(item.contact)}</span></div>` : ''}
                     </div>
-                    ${item.contact ? `
-                      <div class="poste-depot-item">
-                        ${icon('phone', 13)}
-                        <span><strong>Contact :</strong> ${escapeHtml(item.contact)}</span>
-                      </div>
-                    ` : ''}
                   </div>
-                </div>
-                
-                <button class="btn-primary-green" style="margin-top:auto; justify-content:center;" data-action="claim-object" data-id="${item.id}">
-                  ${icon('check-circle', 14)} Réclamer cet objet
-                </button>
-              ` : `
-                <button class="btn-default-outline" style="margin-top:auto; justify-content:center;" data-action="help-find" data-id="${item.id}">
-                  ${icon('message-circle', 14)} J’ai des informations
-                </button>
-              `}
-            </div>
-          </div>
-        `).join('')}
-      </div>
-    </div>
+                  <button class="btn-primary-green lost-item-action" data-action="claim-object" data-id="${item.id}">${icon('check-circle', 14)} Réclamer cet objet</button>
+                ` : `
+                  <button class="btn-default-outline lost-item-action" data-action="help-find" data-id="${item.id}">${icon('message-circle', 14)} J’ai des informations</button>
+                `}
+              </div>
+            </article>
+          `).join('') : `
+            <div class="citizen-empty-state lost-items-empty">${icon('search-x', 28)}<strong>Aucun objet trouvé</strong><p>Essayez un autre mot-clé ou réinitialisez les filtres.</p></div>
+          `}
+        </div>
+      </section>
+    </section>
   `;
 }
 
