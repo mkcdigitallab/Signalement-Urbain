@@ -3208,3 +3208,20 @@ select:focus-visible {
 .agent-side-card{border-radius:14px;box-shadow:var(--shadow-sm)}
 .agent-field-kit li svg{color:var(--primary-green)}
 .agent-completed-label{background:var(--badge-resolu-bg);color:var(--badge-resolu-text)}
+
+
+/* Missions du jour — donner plus d'espace au travail terrain */
+.agent-dashboard-layout{grid-template-columns:minmax(0,1fr) 225px;gap:20px}
+.agent-route-panel{min-width:0}
+.agent-work-list{gap:16px}
+.agent-work-card{padding:16px}
+.agent-work-main{grid-template-columns:136px minmax(0,1fr) 165px;gap:18px}
+.agent-work-image{height:112px}
+.agent-work-content h3{font-size:15.5px}
+.agent-work-location,.agent-work-category{font-size:10.5px}
+.agent-work-action{min-width:165px}
+.agent-mission-action{min-height:38px}
+.agent-secondary-action{min-height:34px}
+@media(max-width:1000px){.agent-dashboard-layout{grid-template-columns:1fr}.agent-work-main{grid-template-columns:120px minmax(0,1fr) 155px}.agent-work-image{height:100px}}
+@media(max-width:700px){.agent-work-main{grid-template-columns:78px minmax(0,1fr);gap:12px}.agent-work-image{height:82px}.agent-work-action{min-width:0}.agent-work-content h3{font-size:14px}}
+@media(max-width:430px){.agent-work-main{grid-template-columns:1fr}.agent-work-image{height:145px}}
