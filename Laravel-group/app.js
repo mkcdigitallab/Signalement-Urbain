@@ -660,7 +660,6 @@ function citizenDashboardView() {
     .slice(0, 6);
 
   const statusProgress = { received: 25, assigned: 45, inspection: 65, awaiting: 78, progress: 88, resolved: 100, rejected: 100 };
-  const trackingSteps = ['received', 'assigned', 'inspection', 'progress', 'resolved'];
 
   return `
     <section class="citizen-dashboard-shell">
@@ -694,19 +693,25 @@ function citizenDashboardView() {
       <div class="citizen-dashboard-grid">
         <section class="citizen-feed-panel">
           <div class="citizen-section-heading">
-            <div><span class="citizen-section-kicker">${icon('radio',14)} Vie du quartier</span><h3>Signalements récents à ${escapeHtml(state.region)}</h3><p>Les problèmes signalés récemment dans votre région.</p></div>
+            <div><span class="citizen-section-kicker">${icon('radio',14)} Vie du quartier</span><h3>Signalements récents à ${escapeHtml(state.region)}</h3><p>Parcourez les signalements du quartier. Cliquez sur une carte pour voir les détails.</p></div>
             <button class="btn-default-outline" data-action="navigate" data-view="new-report">${icon('plus',14)} Signaler</button>
           </div>
           <div class="citizen-search-bar">${icon('search',16)}<input type="search" aria-label="Rechercher un signalement" placeholder="Rechercher un problème, une rue, une catégorie…" value="${escapeHtml(state.query)}" data-action="citizen-search"></div>
           <div class="citizen-reports-grid">
             ${filteredReports.length ? filteredReports.map(report => `
-              <article class="citizen-report-card" data-action="open-detail" data-id="${report.id}">
-                <img class="report-thumb-img" src="${report.photo || 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=240&q=75'}" alt="${escapeHtml(report.title)}">
+              <article class="citizen-report-card" data-action="open-detail" data-id="${report.id}" tabindex="0" role="button" aria-label="Voir les détails de ${escapeHtml(report.title)}">
+                <div class="citizen-report-image-wrap">
+                  <img class="report-thumb-img" src="${report.photo || 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=500&q=80'}" alt="${escapeHtml(report.title)}">
+                  <span class="citizen-report-card-status status-tag ${statusClasses[report.status]}">${statusLabels[report.status]}</span>
+                </div>
                 <div class="report-card-info">
-                  <div class="citizen-report-card-head"><span class="citizen-category-label">${escapeHtml(report.category)}</span><span class="status-tag ${statusClasses[report.status]}">${statusLabels[report.status]}</span></div>
+                  <div class="citizen-category-label">${escapeHtml(report.category)}</div>
                   <h4 class="report-title-text">${escapeHtml(report.title)}</h4>
                   <div class="report-loc-time">${icon('map-pin',12)}<span>${escapeHtml(report.location)}</span></div>
-                  <div class="citizen-report-footer"><button class="btn-support-issue ${report.supportedByUser?'supported':''}" data-action="toggle-support" data-id="${report.id}" onclick="event.stopPropagation();">${icon('users',13)}<span>${report.supportedByUser?'Soutenu':'Moi aussi'}</span><span class="support-badge-count">${report.supports}</span></button><span class="citizen-report-date">${report.date}</span></div>
+                  <div class="citizen-report-footer">
+                    <button class="btn-support-issue ${report.supportedByUser?'supported':''}" data-action="toggle-support" data-id="${report.id}" onclick="event.stopPropagation();">${icon('users',13)}<span>${report.supportedByUser?'Soutenu':'Moi aussi'}</span><span class="support-badge-count">${report.supports}</span></button>
+                    <span class="citizen-report-open">${icon('arrow-up-right',13)} Détails</span>
+                  </div>
                 </div>
               </article>`).join('') : `<div class="citizen-empty-state">${icon('search-x',28)}<strong>Aucun signalement trouvé</strong><p>Essayez un autre mot-clé ou changez de région.</p></div>`}
           </div>
@@ -720,7 +725,7 @@ function citizenDashboardView() {
               <span class="citizen-my-reports-summary-arrow">${icon(state.myReportsExpanded ? 'chevron-up' : 'chevron-down',16)}</span>
             </button>
             <div class="citizen-my-reports-details">
-              <div class="citizen-widget-intro">Ouvrez un dossier pour consulter son suivi détaillé.</div>
+              <div class="citizen-widget-intro">Survolez ou cliquez pour consulter vos dossiers.</div>
               <div class="citizen-my-reports-list">
                 ${myReports.length ? myReports.map(report => {
                   const progress = statusProgress[report.status] || 0;
@@ -745,6 +750,7 @@ function citizenDashboardView() {
     </section>
   `;
 }
+
 function citizenWizardView() {
   const draft = state.draft;
   const step = Math.min(4, Math.max(1, state.activeStep || 1));
