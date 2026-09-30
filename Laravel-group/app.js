@@ -700,13 +700,19 @@ function citizenDashboardView() {
           <div class="citizen-search-bar">${icon('search',16)}<input type="search" aria-label="Rechercher un signalement" placeholder="Rechercher un problème, une rue, une catégorie…" value="${escapeHtml(state.query)}" data-action="citizen-search"></div>
           <div class="citizen-reports-grid">
             ${filteredReports.length ? filteredReports.map(report => `
-              <article class="citizen-report-card" data-action="open-detail" data-id="${report.id}">
-                <img class="report-thumb-img" src="${report.photo || 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=240&q=75'}" alt="${escapeHtml(report.title)}">
+              <article class="citizen-report-card" data-action="open-detail" data-id="${report.id}" tabindex="0" role="button" aria-label="Voir ${escapeHtml(report.title)}">
+                <div class="citizen-report-image-wrap">
+                  <img class="report-thumb-img" src="${report.photo || 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=800&q=80'}" alt="${escapeHtml(report.title)}">
+                  <span class="citizen-report-card-status status-tag ${statusClasses[report.status]}">${statusLabels[report.status]}</span>
+                </div>
                 <div class="report-card-info">
-                  <div class="citizen-report-card-head"><span class="citizen-category-label">${escapeHtml(report.category)}</span><span class="status-tag ${statusClasses[report.status]}">${statusLabels[report.status]}</span></div>
+                  <div class="citizen-category-label">${escapeHtml(report.category)}</div>
                   <h4 class="report-title-text">${escapeHtml(report.title)}</h4>
                   <div class="report-loc-time">${icon('map-pin',12)}<span>${escapeHtml(report.location)}</span></div>
-                  <div class="citizen-report-footer"><button class="btn-support-issue ${report.supportedByUser?'supported':''}" data-action="toggle-support" data-id="${report.id}" onclick="event.stopPropagation();">${icon('users',13)}<span>${report.supportedByUser?'Soutenu':'Moi aussi'}</span><span class="support-badge-count">${report.supports}</span></button><span class="citizen-report-date">${report.date}</span></div>
+                  <div class="citizen-report-footer">
+                    <button class="btn-support-issue ${report.supportedByUser?'supported':''}" data-action="toggle-support" data-id="${report.id}" onclick="event.stopPropagation();">${icon('users',13)}<span>${report.supportedByUser?'Soutenu':'Moi aussi'}</span><span class="support-badge-count">${report.supports}</span></button>
+                    <span class="citizen-report-open">${icon('arrow-up-right',13)} Voir le signalement</span>
+                  </div>
                 </div>
               </article>`).join('') : `<div class="citizen-empty-state">${icon('search-x',28)}<strong>Aucun signalement trouvé</strong><p>Essayez un autre mot-clé ou changez de région.</p></div>`}
           </div>
