@@ -3537,3 +3537,24 @@ select:focus-visible {
 @media(max-width:1000px){.admin-supervision-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-supervision-grid{grid-template-columns:1fr}}
 @media(max-width:700px){.admin-supervision-hero{padding:22px 20px}.admin-supervision-hero h1{font-size:21px}.admin-supervision-report-main{grid-template-columns:1fr}.admin-supervision-report-side{align-items:flex-start;flex-direction:row;flex-wrap:wrap;min-width:0}.admin-supervision-report-side>div{margin-left:auto}}
 @media(max-width:430px){.admin-supervision-kpis{grid-template-columns:1fr}.admin-supervision-focus{display:none}.admin-supervision-report{padding:12px}.admin-supervision-report-side>div{width:100%;margin-left:0}}
+
+
+/* Dashboard citoyen — catalogue pleine largeur */
+.citizen-dashboard-grid{
+  grid-template-columns:minmax(0,1fr);
+}
+.citizen-feed-panel{
+  width:100%;
+}
+.citizen-reports-grid{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:14px;
+}
+.citizen-report-card{
+  min-height:190px;
+}
+@media(max-width:760px){
+  .citizen-reports-grid{
+    grid-template-columns:1fr;
+  }
+}
