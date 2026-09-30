@@ -253,7 +253,8 @@ const state = {
   toastTimer: null,
   activeModal: null,
   confirmedResolved: false,
-  authMode: 'login' // 'login' ou 'register'
+  authMode: 'login', // 'login' ou 'register'
+  myReportsExpanded: false
 };
 
 // Initialisation Thème depuis LocalStorage ou par défaut
@@ -650,298 +651,129 @@ function mainContentView() {
 // ==========================================================================
 function citizenDashboardView() {
   const myReports = state.reports.filter(r => r.author === 'Awa Diop');
-  const filteredReports = state.reports.filter(r => 
-    `${r.title} ${r.category} ${r.location}`.toLowerCase().includes(state.query.toLowerCase())
-  );
+  const myActive = myReports.filter(r => !['resolved','rejected'].includes(r.status));
+  const myResolved = myReports.filter(r => r.status === 'resolved');
+  const mySupports = state.reports.filter(r => r.supportedByUser).length;
+  const filteredReports = state.reports
+    .filter(r => r.region === state.region)
+    .filter(r => `${r.title} ${r.category} ${r.location}`.toLowerCase().includes(state.query.toLowerCase()))
+    .slice(0, 6);
+
+  const statusProgress = { received: 25, assigned: 45, inspection: 65, awaiting: 78, progress: 88, resolved: 100, rejected: 100 };
+  const trackingSteps = ['received', 'assigned', 'inspection', 'progress', 'resolved'];
 
   return `
-    <!-- Hero d'accueil chaleureux -->
-    <div class="citizen-welcome-hero">
-      <div class="citizen-welcome-content">
-        <h2>Dalal ak jàmm, Awa Diop !</h2>
-        <p>Participez activement à l'amélioration de votre commune à Dakar. Signalez une anomalie, soutenez les priorités de vos voisins et suivez chaque intervention en temps réel.</p>
-        <div class="citizen-hero-buttons">
-          <button class="btn-primary-green" data-action="navigate" data-view="new-report">
-            ${icon('plus-circle', 16)} Faire un signalement
-          </button>
-          <button class="btn-default-outline" style="color:#fff; border-color:rgba(255,255,255,0.4);" data-action="navigate" data-view="lost-items">
-            ${icon('search', 16)} Rechercher un objet perdu
-          </button>
-        </div>
-      </div>
-      <div style="font-size:72px; opacity:0.18; padding-right:20px;">
-        ${icon('map-pin', 84)}
-      </div>
-    </div>
-    
-    <!-- Action Requise - Boucle de Confirmation (Cahier des charges) -->
-    ${!state.confirmedResolved ? `
-      <div class="confirmation-alert-card">
-        <div class="confirmation-alert-text">
-          <strong>
-            ${icon('check-circle', 18, 'text-warning')} 
-            Validation requise : Intervention terminée près de chez vous
-          </strong>
-          <p>La mairie a résolu le signalement <em>"Branches d'acacia menaçant de rompre"</em> sur l'Avenue Malick Sy. En tant que citoyen du quartier, confirmez-vous la bonne remise en état ?</p>
-        </div>
-        <div style="display:flex; gap:8px;">
-          <button class="btn-primary-green" data-action="confirm-resolution">
-            ${icon('check', 14)} Oui, je confirme la résolution
-          </button>
-          <button class="btn-default-outline" data-action="contest-resolution">
-            ${icon('x', 14)} Le problème persiste
-          </button>
-        </div>
-      </div>
-    ` : `
-      <div style="background:var(--primary-green-light); border:1px solid var(--primary-green); padding:12px 20px; border-radius:var(--radius-md); display:flex; align-items:center; justify-content:space-between; font-size:13px; font-weight:700; color:var(--primary-green);">
-        <span style="display:flex; align-items:center; gap:8px;">
-          ${icon('check-circle', 18)} Merci Awa ! Votre confirmation citoyenne a permis de clôturer définitivement ce dossier.
-        </span>
-        <button class="btn-default-outline" style="padding:4px 10px; font-size:11px;" data-action="undo-confirmation">Annuler</button>
-      </div>
-    `}
-    
-    <!-- Grille de signalements du quartier & Timeline -->
-    <div style="display:grid; grid-template-columns: 2fr 1fr; gap:20px;">
-      <div>
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-          <div>
-            <h3 style="font-size:16px; font-weight:800; color:var(--text-main);">Signalements récents dans la région (${state.region})</h3>
-            <p style="font-size:12.5px; color:var(--text-muted);">Soutenez les signalements de votre quartier pour accélérer leur prise en charge.</p>
+    <section class="citizen-dashboard-shell">
+      <div class="citizen-welcome-hero">
+        <div class="citizen-welcome-content">
+          <span class="citizen-hero-eyebrow">${icon('map-pin',13)} Dakar · ${escapeHtml(state.region)}</span>
+          <h2>Dalal ak jàmm, Awa 👋</h2>
+          <p>Votre espace citoyen pour signaler un problème, suivre vos dossiers et voir ce qui change dans votre quartier.</p>
+          <div class="citizen-hero-buttons">
+            <button class="btn-primary-green" data-action="navigate" data-view="new-report">${icon('plus-circle',16)} Faire un signalement</button>
+            <button class="btn-default-outline citizen-hero-secondary" data-action="navigate" data-view="my-reports">${icon('file-text',16)} Voir mes signalements</button>
           </div>
-          <button class="btn-default-outline" data-action="navigate" data-view="new-report">
-            ${icon('plus', 14)} Signaler
-          </button>
         </div>
-        
-        <div class="citizen-reports-grid">
-          ${filteredReports.map(report => `
-            <div class="citizen-report-card" data-action="open-detail" data-id="${report.id}">
-              <img class="report-thumb-img" src="${report.photo || 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=160&q=75'}" alt="${escapeHtml(report.title)}">
-              <div class="report-card-info">
-                <div>
-                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                    <span style="font-size:10.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">
-                      ${escapeHtml(report.category)} · ${report.id}
-                    </span>
-                    <span class="status-tag ${statusClasses[report.status]}">
-                      ${statusLabels[report.status]}
-                    </span>
-                  </div>
+        <div class="citizen-hero-visual" aria-hidden="true"><div class="citizen-hero-orbit orbit-one"></div><div class="citizen-hero-orbit orbit-two"></div><div class="citizen-hero-pin">${icon('map-pin',32)}</div></div>
+      </div>
+
+      <section class="citizen-kpi-grid" aria-label="Résumé de votre activité">
+        <div class="citizen-kpi-card"><div class="citizen-kpi-icon">${icon('file-text',19)}</div><div><span>Mes signalements</span><strong>${myReports.length}</strong><small>déposés par vous</small></div></div>
+        <div class="citizen-kpi-card"><div class="citizen-kpi-icon is-blue">${icon('activity',19)}</div><div><span>En cours</span><strong>${myActive.length}</strong><small>à suivre</small></div></div>
+        <div class="citizen-kpi-card"><div class="citizen-kpi-icon is-green">${icon('check-circle-2',19)}</div><div><span>Résolus</span><strong>${myResolved.length}</strong><small>dossiers clôturés</small></div></div>
+        <div class="citizen-kpi-card"><div class="citizen-kpi-icon is-orange">${icon('heart',19)}</div><div><span>Mes soutiens</span><strong>${mySupports}</strong><small>problèmes soutenus</small></div></div>
+      </section>
+
+      ${!state.confirmedResolved ? `
+        <section class="confirmation-alert-card citizen-action-card">
+          <div class="confirmation-alert-text"><span class="citizen-section-kicker">${icon('check-circle',14)} Action attendue</span><strong>Confirmez une intervention terminée</strong><p>La mairie indique que le signalement « Branches d’acacia menaçant de rompre » est résolu sur l’Avenue Malick Sy. Votre confirmation permet de clôturer le dossier côté citoyen.</p></div>
+          <div class="citizen-action-buttons"><button class="btn-primary-green" data-action="confirm-resolution">${icon('check',14)} Confirmer</button><button class="btn-default-outline" data-action="contest-resolution">${icon('x',14)} Le problème persiste</button></div>
+        </section>
+      ` : `<section class="citizen-confirmed-card"><span>${icon('check-circle',18)} Confirmation enregistrée</span><button class="btn-default-outline" data-action="undo-confirmation">Annuler</button></section>`}
+
+      <div class="citizen-dashboard-grid">
+        <section class="citizen-feed-panel">
+          <div class="citizen-section-heading">
+            <div><span class="citizen-section-kicker">${icon('radio',14)} Vie du quartier</span><h3>Signalements récents à ${escapeHtml(state.region)}</h3><p>Les problèmes signalés récemment dans votre région.</p></div>
+            <button class="btn-default-outline" data-action="navigate" data-view="new-report">${icon('plus',14)} Signaler</button>
+          </div>
+          <div class="citizen-search-bar">${icon('search',16)}<input type="search" aria-label="Rechercher un signalement" placeholder="Rechercher un problème, une rue, une catégorie…" value="${escapeHtml(state.query)}" data-action="citizen-search"></div>
+          <div class="citizen-reports-grid">
+            ${filteredReports.length ? filteredReports.map(report => `
+              <article class="citizen-report-card">
+                <div class="citizen-report-image-wrap" data-action="open-detail" data-id="${report.id}" role="button" tabindex="0" aria-label="Voir le détail du signalement ${escapeHtml(report.title)}">
+                  <img class="report-thumb-img" src="${report.photo || 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=800&q=80'}" alt="${escapeHtml(report.title)}">
+                  <span class="citizen-report-card-status status-tag ${statusClasses[report.status]}">${statusLabels[report.status]}</span>
+                </div>
+                <div class="report-card-info">
+                  <div class="citizen-category-label">${escapeHtml(report.category)}</div>
                   <h4 class="report-title-text">${escapeHtml(report.title)}</h4>
-                  <div class="report-loc-time">
-                    ${icon('map-pin', 12)} ${escapeHtml(report.location)}
+                  <div class="report-loc-time">${icon('map-pin',12)}<span>${escapeHtml(report.location)}</span></div>
+                  <div class="citizen-report-footer">
+                    <button class="btn-support-issue ${report.supportedByUser?'supported':''}" data-action="toggle-support" data-id="${report.id}" onclick="event.stopPropagation();">${icon('users',13)}<span>${report.supportedByUser?'Soutenu':'Moi aussi'}</span><span class="support-badge-count">${report.supports}</span></button>
                   </div>
                 </div>
-                
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; padding-top:8px; border-top:1px solid var(--border-color);">
-                  <!-- Bouton Soutien Citoyen ("Moi aussi j'ai ce problème") -->
-                  <button class="btn-support-issue ${report.supportedByUser ? 'supported' : ''}" data-action="toggle-support" data-id="${report.id}" onclick="event.stopPropagation();">
-                    ${icon('users', 14)} 
-                    <span>${report.supportedByUser ? 'Soutenu' : 'Moi aussi'}</span>
-                    <span class="support-badge-count">${report.supports}</span>
-                  </button>
-                  
-                  <span style="font-size:11px; color:var(--text-muted); font-weight:600;">
-                    ${report.date}
-                  </span>
-                </div>
-              </div>
-            </div>
-          `).join('')}
-        </div>
+              </article>`).join('') : `<div class="citizen-empty-state">${icon('search-x',28)}<strong>Aucun signalement trouvé</strong><p>Essayez un autre mot-clé ou changez de région.</p></div>`}
+          </div>
+        </section>
+
       </div>
-      
-      <!-- Colonne Droite : Mon Suivi & Timeline du Cycle de Vie -->
-      <div>
-        <div class="dashboard-card-widget">
-          <div class="widget-header-title">
-            <span>${icon('clock', 16)} Mon Suivi Citoyen</span>
-            <span style="font-size:11.5px; color:var(--primary-green); font-weight:700;">${myReports.length} signalements</span>
-          </div>
-          
-          <div class="timeline-vertical-flow">
-            <div class="timeline-step-row">
-              <div class="timeline-step-dot active">${icon('check', 10)}</div>
-              <div class="timeline-step-title">Nid-de-poule Av. Cheikh Anta Diop</div>
-              <div style="font-size:12px; color:var(--primary-green); font-weight:700;">Intervention en cours</div>
-              <div class="timeline-step-time">Équipe Voirie dépêchée sur place</div>
-            </div>
-            
-            <div class="timeline-step-row">
-              <div class="timeline-step-dot active">${icon('check', 10)}</div>
-              <div class="timeline-step-title">Élagage acacia Av. Malick Sy</div>
-              <div style="font-size:12px; color:#16a34a; font-weight:700;">Résolu & Vérifié</div>
-              <div class="timeline-step-time">Clôturé après confirmation citoyenne</div>
-            </div>
-            
-            <div class="timeline-step-row">
-              <div class="timeline-step-dot">${icon('circle', 8)}</div>
-              <div class="timeline-step-title">Prochaine étape</div>
-              <div class="timeline-step-time">Notification par SMS & application dès validation</div>
-            </div>
-          </div>
-          
-          <div style="margin-top:20px; padding-top:14px; border-top:1px solid var(--border-color);">
-            <button class="btn-default-outline" style="width:100%; justify-content:center;" data-action="navigate" data-view="lost-items">
-              ${icon('package-check', 14)} Objets trouvés à récupérer
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+    </section>
   `;
 }
-
-// ==========================================================================
-// WIZARD MULTI-ÉTAPES : NOUVEAU SIGNALEMENT CITOYEN
-// ==========================================================================
 function citizenWizardView() {
   const draft = state.draft;
-
-  return `
-    <div style="max-width:960px; margin:0 auto; width:100%;">
-      <!-- Stepper Header Moderne -->
-      <div class="wizard-stepper-header">
-        <div class="wizard-step-node completed">
-          <div class="step-circle">${icon('check', 14)}</div>
-          <span class="step-label">1. Localisation</span>
-        </div>
-        <div class="wizard-step-node active">
-          <div class="step-circle">2</div>
-          <span class="step-label">2. Description</span>
-        </div>
-        <div class="wizard-step-node">
-          <div class="step-circle">3</div>
-          <span class="step-label">3. Photo & Danger</span>
-        </div>
-        <div class="wizard-step-node">
-          <div class="step-circle">4</div>
-          <span class="step-label">4. Transmission</span>
-        </div>
+  const step = Math.min(4, Math.max(1, state.activeStep || 1));
+  const steps = [
+    { number: 1, label: 'Localisation' },
+    { number: 2, label: 'Problème' },
+    { number: 3, label: 'Photo & urgence' },
+    { number: 4, label: 'Vérification' }
+  ];
+  const content = {
+    1: `
+      <div class="report-step-intro"><span class="report-step-kicker">Étape 1 sur 4</span><h2>Où se trouve le problème ?</h2><p>Une adresse précise aide le bon service à intervenir plus vite.</p></div>
+      <div class="report-form-stack">
+        <div class="auth-form-group"><label class="auth-label">Région</label><select class="auth-select" id="draft-region">${regionsSenegal.map(r => `<option value="${r}" ${r === (draft.region || state.region) ? 'selected' : ''}>${r}</option>`).join('')}</select></div>
+        <div class="auth-form-group"><label class="auth-label">Adresse, quartier ou repère <span class="field-required">*</span></label><input class="auth-input" id="draft-location" required placeholder="Ex. Avenue Cheikh Anta Diop, près de la pharmacie" value="${escapeHtml(draft.location)}"></div>
+        <button type="button" class="report-gps-card" data-action="get-gps"><span class="report-gps-icon">${icon('locate-fixed',19)}</span><span><strong>Utiliser ma position</strong><small>Détecter automatiquement l'endroit où vous êtes</small></span>${icon('chevron-right',17)}</button>
+        ${state.coordinates ? `<div class="report-location-confirmed">${icon('check-circle-2',16)} Position enregistrée : ${escapeHtml(state.coordinates)}</div>` : ''}
+      </div>`,
+    2: `
+      <div class="report-step-intro"><span class="report-step-kicker">Étape 2 sur 4</span><h2>Qu'est-ce qui ne va pas ?</h2><p>Choisissez une catégorie puis décrivez simplement ce que vous avez constaté.</p></div>
+      <div class="report-form-stack">
+        <div><label class="auth-label">Catégorie <span class="field-required">*</span></label><div class="categories-grid-tiles report-category-grid">${categories.map(cat => `<button type="button" class="cat-tile-btn ${draft.category === cat.name ? 'selected' : ''}" data-action="select-category" data-cat="${cat.name}">${icon(cat.icon,19)}<span>${cat.name}</span></button>`).join('')}</div></div>
+        <div class="auth-form-group"><label class="auth-label">Titre du problème <span class="field-required">*</span></label><input class="auth-input" id="draft-title" required placeholder="Ex. Lampadaire éteint" value="${escapeHtml(draft.title)}"></div>
+        <div class="auth-form-group"><label class="auth-label">Que se passe-t-il ? <span class="field-required">*</span></label><textarea class="auth-input" id="draft-description" rows="5" required placeholder="Décrivez le problème, le danger éventuel et depuis quand vous l'avez remarqué.">${escapeHtml(draft.description)}</textarea></div>
+      </div>`,
+    3: `
+      <div class="report-step-intro"><span class="report-step-kicker">Étape 3 sur 4</span><h2>Ajoutez une preuve et indiquez l'urgence</h2><p>Une photo aide les équipes à comprendre la situation avant de se déplacer.</p></div>
+      <div class="report-form-stack">
+        <label class="upload-dropzone report-upload-zone">${state.photo ? `<img src="${state.photo}" alt="Aperçu du signalement"><span class="report-upload-success">${icon('image-check',16)} Photo ajoutée · cliquez pour remplacer</span>` : `<span class="report-upload-icon">${icon('camera',30)}</span><strong>Ajouter une photo</strong><small>JPG ou PNG · 10 Mo maximum · facultatif</small>`}<input type="file" accept="image/*" onchange="window.handlePhotoUpload(event)"></label>
+        <div><label class="auth-label">Niveau d'urgence perçu</label><div class="priority-selector-grid report-priority-grid">${['Faible','Moyenne','Urgente'].map(p => `<button type="button" class="priority-choice-btn ${p.toLowerCase()} ${draft.priority === p ? 'selected' : ''}" data-action="select-priority" data-priority="${p}"><strong>${p}</strong><small>${p === 'Urgente' ? 'Danger immédiat' : p === 'Moyenne' ? 'Gêne importante' : 'À traiter normalement'}</small></button>`).join('')}</div></div>
+      </div>`,
+    4: `
+      <div class="report-step-intro"><span class="report-step-kicker">Étape 4 sur 4</span><h2>Tout est prêt ?</h2><p>Vérifiez les informations avant d'envoyer votre signalement à la mairie.</p></div>
+      <div class="report-review-card">
+        <div class="report-review-row"><span>Lieu</span><strong>${escapeHtml(draft.location || 'Non renseigné')} · ${escapeHtml(draft.region || state.region)}</strong></div>
+        <div class="report-review-row"><span>Catégorie</span><strong>${escapeHtml(draft.category)}</strong></div>
+        <div class="report-review-row"><span>Problème</span><strong>${escapeHtml(draft.title || 'Non renseigné')}</strong></div>
+        <div class="report-review-row report-review-description"><span>Description</span><p>${escapeHtml(draft.description || 'Non renseignée')}</p></div>
+        <div class="report-review-row"><span>Urgence</span><span class="priority-review ${draft.priority.toLowerCase()}">${escapeHtml(draft.priority)}</span></div>
+        <div class="report-review-row"><span>Photo</span><strong>${state.photo ? 'Ajoutée' : 'Aucune photo'}</strong></div>
       </div>
-      
-      <form id="wizard-report-form" onsubmit="event.preventDefault(); window.submitNewReport();">
-        <div class="form-grid-layout">
-          <div style="display:flex; flex-direction:column; gap:16px;">
-            <!-- Étape 1 : Choisir la Catégorie -->
-            <div class="form-card-panel">
-              <h3 style="font-size:15px; font-weight:800; color:var(--text-main); margin-bottom:8px;">
-                1. Nature du problème
-              </h3>
-              <p style="font-size:12.5px; color:var(--text-muted); margin-bottom:12px;">
-                Sélectionnez le domaine concerné pour aiguiller directement les services municipaux compétents.
-              </p>
-              
-              <div class="categories-grid-tiles">
-                ${categories.map(cat => `
-                  <button type="button" class="cat-tile-btn ${draft.category === cat.name ? 'selected' : ''}" data-action="select-category" data-cat="${cat.name}">
-                    ${icon(cat.icon, 20)}
-                    <span>${cat.name}</span>
-                  </button>
-                `).join('')}
-              </div>
-              
-              <div class="auth-form-group">
-                <label class="auth-label">Titre concis du problème</label>
-                <input class="auth-input" type="text" id="draft-title" required placeholder="Ex. : Lampadaire éteint au croisement" value="${escapeHtml(draft.title)}">
-              </div>
-              
-              <div class="auth-form-group">
-                <label class="auth-label">Description détaillée & contexte</label>
-                <textarea class="auth-input" id="draft-description" rows="4" required placeholder="Décrivez le danger, la localisation exacte et depuis quand le problème persiste...">${escapeHtml(draft.description)}</textarea>
-              </div>
-            </div>
-            
-            <!-- Étape 2 : Photo du Problème -->
-            <div class="form-card-panel">
-              <h3 style="font-size:15px; font-weight:800; color:var(--text-main); margin-bottom:8px;">
-                2. Photo ou preuve visuelle
-              </h3>
-              <p style="font-size:12.5px; color:var(--text-muted); margin-bottom:12px;">
-                Une photo claire permet à l'agent technique d'inspecter et préparer le matériel adapté.
-              </p>
-              
-              <label class="upload-dropzone">
-                ${state.photo ? `
-                  <img src="${state.photo}" alt="Aperçu signalement">
-                  <span style="font-size:12px; font-weight:700; color:var(--primary-green); margin-top:8px;">
-                    ${icon('refresh-cw', 13)} Changer la photo
-                  </span>
-                ` : `
-                  <div style="font-size:32px; color:var(--primary-green);">
-                    ${icon('camera', 36)}
-                  </div>
-                  <strong style="font-size:13px; color:var(--text-main);">Prendre une photo ou importer un fichier</strong>
-                  <small style="font-size:11px; color:var(--text-muted);">Format JPG, PNG · Max 10 Mo</small>
-                `}
-                <input type="file" accept="image/*" onchange="window.handlePhotoUpload(event)">
-              </label>
-            </div>
-          </div>
-          
-          <!-- Colonne Latérale : Géolocalisation & Priorité -->
-          <div style="display:flex; flex-direction:column; gap:16px;">
-            <div class="form-card-panel">
-              <h3 style="font-size:15px; font-weight:800; color:var(--text-main); margin-bottom:12px;">
-                3. Localisation au Sénégal
-              </h3>
-              
-              <div class="auth-form-group">
-                <label class="auth-label">Région</label>
-                <select class="auth-select" id="draft-region">
-                  ${regionsSenegal.map(r => `<option value="${r}" ${r === state.region ? 'selected' : ''}>${r}</option>`).join('')}
-                </select>
-              </div>
-              
-              <div class="auth-form-group">
-                <label class="auth-label">Adresse, quartier ou repère</label>
-                <input class="auth-input" type="text" id="draft-location" required placeholder="Ex. : Avenue Cheikh Anta Diop, près pharmacie" value="${escapeHtml(draft.location)}">
-              </div>
-              
-              <button type="button" class="btn-default-outline" style="width:100%; justify-content:center; margin-top:6px;" data-action="get-gps">
-                ${icon('map-pin', 14)} Position GPS automatique
-              </button>
-              
-              ${state.coordinates ? `
-                <div style="font-size:11.5px; color:var(--primary-green); font-weight:700; margin-top:8px; display:flex; align-items:center; gap:6px;">
-                  ${icon('check-circle', 14)} Coordonnées : ${state.coordinates}
-                </div>
-              ` : ''}
-              
-              <div style="margin-top:16px; padding-top:16px; border-top:1px solid var(--border-color);">
-                <label class="auth-label">Niveau d'urgence perçu</label>
-                <div class="priority-selector-grid">
-                  ${['Faible', 'Moyenne', 'Urgente'].map(p => `
-                    <button type="button" class="priority-choice-btn ${p.toLowerCase()} ${draft.priority === p ? 'selected' : ''}" data-action="select-priority" data-priority="${p}">
-                      ${p}
-                    </button>
-                  `).join('')}
-                </div>
-              </div>
-              
-              <button type="submit" class="btn-primary-green" style="width:100%; justify-content:center; margin-top:20px; padding:12px;">
-                ${icon('send', 15)} Envoyer le signalement à la Mairie
-              </button>
-            </div>
-            
-            <div style="background:var(--primary-green-light); border:1px solid rgba(0,135,90,0.25); border-radius:var(--radius-lg); padding:16px; font-size:12px; color:var(--text-main); line-height:1.5;">
-              <strong style="display:flex; align-items:center; gap:6px; color:var(--primary-green); margin-bottom:6px;">
-                ${icon('shield-check', 16)} Engagement SunuGox
-              </strong>
-              Votre signalement est automatiquement transmis au bureau technique régional compétent. Vous recevrez un SMS et une notification à chaque étape de résolution.
-            </div>
-          </div>
-        </div>
+      <div class="report-trust-note">${icon('shield-check',18)}<span><strong>Vos informations sont prêtes à être transmises.</strong><small>Vous pourrez suivre l'avancement depuis « Mes signalements ».</small></span></div>`
+  };
+  return `
+    <section class="report-wizard-shell">
+      <div class="report-wizard-top"><button type="button" class="btn-default-outline" data-action="navigate" data-view="dashboard">${icon('arrow-left',15)} Retour</button><div><span class="citizen-section-kicker">${icon('plus-circle',14)} Nouveau signalement</span><p>Quelques étapes simples, puis c'est transmis.</p></div></div>
+      <div class="report-stepper">${steps.map((s,i)=>`<div class="report-stepper-item ${step===s.number?'active':''} ${step>s.number?'done':''}"><span class="report-stepper-circle">${step>s.number?icon('check',13):s.number}</span><span>${s.label}</span></div>${i<3?'<div class="report-stepper-line"></div>':''}`).join('')}</div>
+      <form id="wizard-report-form" class="report-wizard-card" onsubmit="event.preventDefault(); window.handleWizardNext();">
+        <div class="report-wizard-content">${content[step]}</div>
+        <div class="report-wizard-footer"><span class="report-step-counter">Étape ${step} / 4</span><div class="report-wizard-actions">${step>1?'<button type="button" class="btn-default-outline" data-action="wizard-back">'+icon('arrow-left',15)+' Précédent</button>':''}${step<4?`<button type="submit" class="btn-primary-green">${step===1?'Continuer':step===2?'Ajouter une photo':'Vérifier le signalement'} ${icon('arrow-right',15)}</button>`:`<button type="button" class="btn-primary-green" data-action="submit-report">${icon('send',15)} Envoyer le signalement</button>`}</div></div>
       </form>
-    </div>
-  `;
+    </section>`;
 }
-
-// ==========================================================================
-// VUE OBJETS PERDUS & RETROUVÉS (AVEC POSTE DE DÉPÔT / CNI)
-// ==========================================================================
 function lostItemsView() {
   const filtered = state.items.filter(item => {
     const matchesSearch = `${item.name} ${item.description} ${item.place} ${item.station}`.toLowerCase().includes(state.lostSearch.toLowerCase());
@@ -950,102 +782,88 @@ function lostItemsView() {
   });
 
   return `
-    <div style="display:flex; flex-direction:column; gap:20px;">
-      <!-- Panneau de recherche & Filtres -->
-      <div class="objets-search-panel">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
+    <section class="lost-items-page">
+      <header class="lost-items-hero">
+        <div>
+          <span class="citizen-section-kicker">${icon('search', 14)} Objets retrouvés & CNI</span>
+          <h2>Retrouvez un objet perdu</h2>
+          <p>Consultez les objets et documents déposés auprès des services publics, puis identifiez le point de retrait avant de vous déplacer.</p>
+        </div>
+        <div class="lost-items-hero-count">
+          <strong>${filtered.length}</strong>
+          <span>résultat${filtered.length !== 1 ? 's' : ''}</span>
+        </div>
+      </header>
+
+      <section class="objets-search-panel lost-items-filters">
+        <div class="lost-items-filter-heading">
           <div>
-            <h3 style="font-size:17px; font-weight:800; color:var(--text-main);">
-              ${icon('search', 18)} Objets Perdus & Cartes Nationales d’Identité (CNI)
-            </h3>
-            <p style="font-size:13px; color:var(--text-muted);">
-              Consultez les pièces d'identité et objets déposés dans les commissariats et mairies du Sénégal.
-            </p>
+            <strong>${icon('filter', 15)} Rechercher dans les objets retrouvés</strong>
+            <span>Nom, type d’objet, lieu ou point de dépôt</span>
           </div>
-          <button class="btn-primary-green" data-action="open-declare-lost">
-            ${icon('plus', 14)} Déclarer une perte
-          </button>
+          <button class="btn-primary-green" data-action="open-declare-lost">${icon('plus', 14)} Déclarer une perte</button>
         </div>
-        
         <div class="objets-search-inputs">
-          <input class="auth-input" type="text" placeholder="Rechercher par nom (ex. S. Ndiaye), objet, lieu..." value="${escapeHtml(state.lostSearch)}" oninput="state.lostSearch = this.value; render();">
-          
-          <select class="auth-select" onchange="state.lostTypeFilter = this.value; render();">
-            <option value="all">Tous les statuts</option>
-            <option value="Retrouvé" ${state.lostTypeFilter === 'Retrouvé' ? 'selected' : ''}>Objets Retrouvés (En poste)</option>
-            <option value="Perdu" ${state.lostTypeFilter === 'Perdu' ? 'selected' : ''}>Signalés Perdus</option>
-          </select>
-          
-          <select class="auth-select" onchange="state.region = this.value; render();">
-            ${regionsSenegal.map(r => `<option value="${r}" ${r === state.region ? 'selected' : ''}>${r}</option>`).join('')}
-          </select>
-          
-          <button class="btn-default-outline" data-action="reset-lost-filter">
-            ${icon('rotate-ccw', 14)} Réinitialiser
-          </button>
+          <label class="lost-filter-field">
+            <span>Recherche</span>
+            <input class="auth-input" type="search" placeholder="Ex. CNI, clés, Sandaga..." value="${escapeHtml(state.lostSearch)}" oninput="state.lostSearch = this.value; render();">
+          </label>
+          <label class="lost-filter-field">
+            <span>Statut</span>
+            <select class="auth-select" onchange="state.lostTypeFilter = this.value; render();">
+              <option value="all">Tous les statuts</option>
+              <option value="Retrouvé" ${state.lostTypeFilter === 'Retrouvé' ? 'selected' : ''}>Objets retrouvés</option>
+              <option value="Perdu" ${state.lostTypeFilter === 'Perdu' ? 'selected' : ''}>Signalés perdus</option>
+            </select>
+          </label>
+          <label class="lost-filter-field">
+            <span>Région</span>
+            <select class="auth-select" onchange="state.region = this.value; render();">
+              ${regionsSenegal.map(r => `<option value="${r}" ${r === state.region ? 'selected' : ''}>${r}</option>`).join('')}
+            </select>
+          </label>
+          <button class="btn-default-outline lost-reset-button" data-action="reset-lost-filter">${icon('rotate-ccw', 14)} Réinitialiser</button>
         </div>
-      </div>
-      
-      <!-- Liste des objets -->
-      <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:18px;">
-        ${filtered.map(item => `
-          <div class="citizen-report-card" style="flex-direction:column; padding:0; overflow:hidden;">
-            <div style="height:150px; position:relative; overflow:hidden; background-color:var(--border-color);">
-              <img src="${item.image}" alt="${escapeHtml(item.name)}" style="width:100%; height:100%; object-fit:cover;">
-              <span class="status-tag ${item.status === 'Retrouvé' ? 'resolu' : 'en_cours'}" style="position:absolute; top:12px; right:12px; box-shadow:var(--shadow-sm);">
-                ${item.status}
-              </span>
-            </div>
-            
-            <div style="padding:18px; display:flex; flex-direction:column; gap:10px; flex:1;">
-              <div>
-                <span style="font-size:11px; font-weight:700; color:var(--primary-green); text-transform:uppercase;">
-                  ${item.id} · ${item.date}
-                </span>
-                <h4 style="font-size:15px; font-weight:800; color:var(--text-main); margin-top:2px;">
-                  ${escapeHtml(item.name)}
-                </h4>
-                <p style="font-size:12.5px; color:var(--text-muted); margin-top:4px; line-height:1.4;">
-                  ${escapeHtml(item.description)}
-                </p>
-                <div style="font-size:12px; color:var(--text-muted); display:flex; align-items:center; gap:6px; margin-top:6px;">
-                  ${icon('map-pin', 12)} Lieu : ${escapeHtml(item.place)}
-                </div>
+      </section>
+
+      <section class="lost-items-results">
+        <div class="lost-items-section-heading">
+          <div><span class="citizen-section-kicker">${icon('package-search', 14)} Catalogue</span><h3>Objets actuellement disponibles</h3></div>
+          <span>${filtered.length} résultat${filtered.length !== 1 ? 's' : ''}</span>
+        </div>
+        <div class="lost-items-grid">
+          ${filtered.length ? filtered.map(item => `
+            <article class="lost-item-card">
+              <div class="lost-item-image" data-action="open-lost-detail" data-id="${item.id}" role="button" tabindex="0" aria-label="Voir le détail de ${escapeHtml(item.name)}">
+                <img src="${item.image}" alt="${escapeHtml(item.name)}">
+                <span class="status-tag ${item.status === 'Retrouvé' ? 'resolu' : 'en_cours'}">${item.status}</span>
+                <span class="lost-item-image-hint">${icon('eye', 13)} Voir le détail</span>
               </div>
-              
-              <!-- Poste de dépôt pour récupération -->
-              ${item.station ? `
-                <div class="poste-depot-card">
-                  <div class="poste-depot-header">
-                    ${icon('building-2', 15)} Poste de dépôt sécurisé
-                  </div>
-                  <div class="poste-depot-details-list">
-                    <div class="poste-depot-item">
-                      ${icon('map-pin', 13)}
-                      <span><strong>Lieu :</strong> ${escapeHtml(item.station)}</span>
+              <div class="lost-item-body">
+                <div class="lost-item-meta"><span>${escapeHtml(item.id)}</span><span>${escapeHtml(item.date)}</span></div>
+                <h4>${escapeHtml(item.name)}</h4>
+                <p class="lost-item-description">${escapeHtml(item.description)}</p>
+                <div class="lost-item-location">${icon('map-pin', 13)}<span>${escapeHtml(item.place)}</span></div>
+                ${item.station ? `
+                  <div class="poste-depot-card">
+                    <div class="poste-depot-header">${icon('building-2', 14)} Point de retrait</div>
+                    <div class="poste-depot-details-list">
+                      <div class="poste-depot-item">${icon('map-pin', 13)}<span>${escapeHtml(item.station)}</span></div>
+                      ${item.contact ? `<div class="poste-depot-item">${icon('phone', 13)}<span>${escapeHtml(item.contact)}</span></div>` : ''}
                     </div>
-                    ${item.contact ? `
-                      <div class="poste-depot-item">
-                        ${icon('phone', 13)}
-                        <span><strong>Contact :</strong> ${escapeHtml(item.contact)}</span>
-                      </div>
-                    ` : ''}
                   </div>
-                </div>
-                
-                <button class="btn-primary-green" style="margin-top:auto; justify-content:center;" data-action="claim-object" data-id="${item.id}">
-                  ${icon('check-circle', 14)} Réclamer cet objet
-                </button>
-              ` : `
-                <button class="btn-default-outline" style="margin-top:auto; justify-content:center;" data-action="help-find" data-id="${item.id}">
-                  ${icon('message-circle', 14)} J’ai des informations
-                </button>
-              `}
-            </div>
-          </div>
-        `).join('')}
-      </div>
-    </div>
+                  <button class="btn-primary-green lost-item-action" data-action="claim-object" data-id="${item.id}">${icon('check-circle', 14)} Réclamer cet objet</button>
+                ` : `
+                  <button class="btn-default-outline lost-item-action" data-action="help-find" data-id="${item.id}">${icon('message-circle', 14)} J’ai des informations</button>
+                `}
+              </div>
+            </article>
+          `).join('') : `
+            <div class="citizen-empty-state lost-items-empty">${icon('search-x', 28)}<strong>Aucun objet trouvé</strong><p>Essayez un autre mot-clé ou réinitialisez les filtres.</p></div>
+          `}
+        </div>
+      </section>
+    </section>
   `;
 }
 
@@ -1053,420 +871,313 @@ function lostItemsView() {
 // DASHBOARD AGENT TERRAIN (AMADOU SOW)
 // ==========================================================================
 function agentDashboardView() {
-  const assignedReports = state.reports.filter(r => r.service === 'Voirie' || r.service === 'Assainissement');
-  const awaitingInspection = assignedReports.filter(r => r.status === 'assigned' || r.status === 'inspection');
-  const inProgress = assignedReports.filter(r => r.status === 'progress');
+  const assignedReports = state.reports
+    .filter(r => r.service === 'Voirie' || r.service === 'Assainissement')
+    .sort((a,b) => ({Urgente:0,Moyenne:1,Faible:2}[a.priority] ?? 9) - ({Urgente:0,Moyenne:1,Faible:2}[b.priority] ?? 9));
+  const active = assignedReports.filter(r => ['assigned','inspection','progress'].includes(r.status));
+  const toInspect = active.filter(r => r.status === 'assigned');
+  const toReport = active.filter(r => r.status === 'inspection');
+  const inWork = active.filter(r => r.status === 'progress');
+  const done = assignedReports.filter(r => ['resolved','rejected'].includes(r.status));
+  const urgent = active.filter(r => r.priority === 'Urgente');
+
+  const action = r => r.status === 'assigned'
+    ? `<button class="btn-primary-green agent-mission-action" data-action="agent-start-inspection" data-id="${r.id}">${icon('clipboard-check',14)} Démarrer l’inspection</button>`
+    : r.status === 'inspection'
+      ? `<button class="btn-primary-green agent-mission-action" data-action="agent-submit-report" data-id="${r.id}">${icon('file-check-2',14)} Rédiger le rapport</button>`
+      : r.status === 'progress'
+        ? `<button class="btn-primary-green agent-mission-action" data-action="agent-resolve" data-id="${r.id}">${icon('check-circle',14)} Clôturer la mission</button>`
+        : `<span class="agent-completed-label">${icon('check-circle-2',15)} Mission terminée</span>`;
+
+  const card = r => `
+    <article class="agent-work-card">
+      <div class="agent-work-main">
+        <div class="agent-work-image"><img src="${r.photo}" alt="${escapeHtml(r.title)}"><span class="status-tag ${statusClasses[r.status]}">${statusLabels[r.status]}</span></div>
+        <div class="agent-work-content">
+          <div class="agent-work-meta"><span>${escapeHtml(r.id)}</span><span class="agent-priority priority-${r.priority.toLowerCase()}">${escapeHtml(r.priority)}</span></div>
+          <h3>${escapeHtml(r.title)}</h3>
+          <p class="agent-work-location">${icon('map-pin',13)} ${escapeHtml(r.location)}</p>
+          <p class="agent-work-category">${icon('layers-3',12)} ${escapeHtml(r.category)} · ${escapeHtml(r.service)}</p>
+        </div>
+        <div class="agent-work-action">${action(r)}<button class="agent-secondary-action" data-action="open-detail" data-id="${r.id}">${icon('eye',14)} Détails</button></div>
+      </div>
+      ${r.status === 'inspection' ? `<div class="agent-next-step"><span class="agent-next-step-icon">${icon('clipboard-list',15)}</span><div><strong>Prochaine étape</strong><small>Documenter le constat terrain puis transmettre le rapport à la mairie.</small></div></div>` : ''}
+      ${r.status === 'progress' ? `<div class="agent-next-step is-green"><span class="agent-next-step-icon">${icon('wrench',15)}</span><div><strong>Intervention autorisée</strong><small>Vérifiez le résultat sur place avant de marquer le dossier résolu.</small></div></div>` : ''}
+      ${r.report ? `<div class="agent-inspection-summary"><div class="agent-inspection-summary-head"><span>${icon('clipboard-check',14)} Dernier constat enregistré</span><small>${r.authorized ? 'Autorisation disponible' : 'Rapport terrain'}</small></div><p>${escapeHtml(r.report)}</p></div>` : ''}
+    </article>`;
 
   return `
-    <div style="display:flex; flex-direction:column; gap:22px;">
-      <!-- Header de Mission Agent -->
-      <div class="agent-mission-header">
-        <div>
-          <span style="font-size:11.5px; font-weight:800; color:#fdef42; text-transform:uppercase; letter-spacing:1px;">
-            ${icon('shield', 13)} Équipe Technique Voirie & Réseaux
-          </span>
-          <h2 style="font-size:24px; font-weight:800; margin-top:4px;">
-            Missions & Ordres d’Intervention
-          </h2>
-          <p style="font-size:13.5px; color:rgba(255,255,255,0.85); margin-top:2px;">
-            Agent référent : <strong>Amadou Sow</strong> · District Dakar Centre
-          </p>
-        </div>
-        
-        <div style="display:flex; gap:16px;">
-          <div style="text-align:right;">
-            <div style="font-size:24px; font-weight:800; color:#fdef42;">${awaitingInspection.length}</div>
-            <div style="font-size:11px; color:rgba(255,255,255,0.7);">À inspecter</div>
-          </div>
-          <div style="text-align:right;">
-            <div style="font-size:24px; font-weight:800; color:#4ade80;">${inProgress.length}</div>
-            <div style="font-size:11px; color:rgba(255,255,255,0.7);">Travaux autorisés</div>
-          </div>
-        </div>
+    <section class="agent-dashboard">
+      <header class="agent-dashboard-hero">
+        <div><span class="agent-dashboard-kicker">${icon('map-pin',13)} Terrain · Dakar Centre</span><h1>Bonjour Amadou, voici votre tournée.</h1><p>Priorisez les missions urgentes, inspectez les dossiers affectés et transmettez vos constats depuis le terrain.</p><div class="agent-dashboard-context"><span>${icon('calendar-days',13)} Aujourd’hui · 30 septembre 2026</span><span>${icon('shield-check',13)} Équipe Voirie & Réseaux</span></div></div>
+        <div class="agent-dashboard-hero-focus"><span>À traiter maintenant</span><strong>${urgent.length}</strong><small>mission${urgent.length > 1 ? 's' : ''} urgente${urgent.length > 1 ? 's' : ''}</small></div>
+      </header>
+
+      <section class="agent-kpi-grid">
+        <div class="agent-kpi-card is-alert"><span class="agent-kpi-icon">${icon('siren',18)}</span><div><small>Urgentes</small><strong>${urgent.length}</strong><span>à traiter en priorité</span></div></div>
+        <div class="agent-kpi-card"><span class="agent-kpi-icon">${icon('map',18)}</span><div><small>À inspecter</small><strong>${toInspect.length}</strong><span>visites à effectuer</span></div></div>
+        <div class="agent-kpi-card"><span class="agent-kpi-icon">${icon('clipboard-check',18)}</span><div><small>Rapports à transmettre</small><strong>${toReport.length}</strong><span>constats en attente</span></div></div>
+        <div class="agent-kpi-card is-green"><span class="agent-kpi-icon">${icon('wrench',18)}</span><div><small>Interventions</small><strong>${inWork.length}</strong><span>travaux en cours</span></div></div>
+      </section>
+
+      <div class="agent-dashboard-layout">
+        <main class="agent-route-panel">
+          <div class="agent-section-heading"><div><span class="agent-section-kicker">${icon('route',13)} Feuille de route</span><h2>Missions du jour</h2><p>${active.length} mission${active.length > 1 ? 's' : ''} active${active.length > 1 ? 's' : ''} · triées par priorité.</p></div><span class="agent-route-count">${active.length} actives</span></div>
+          ${active.length ? `<div class="agent-work-list">${active.map(card).join('')}</div>` : `<div class="agent-empty-state">${icon('check-circle-2',22)}<strong>Aucune mission active</strong><span>Votre feuille de route est à jour.</span></div>`}
+          ${done.length ? `<details class="agent-completed-section"><summary>${icon('archive',14)} Missions clôturées (${done.length})</summary><div class="agent-completed-list">${done.map(card).join('')}</div></details>` : ''}
+        </main>
+
+        <aside class="agent-side-panel">
+          <section class="agent-side-card"><div class="agent-side-card-heading"><span>${icon('list-checks',15)} Mon suivi</span></div><div class="agent-progress-list">
+            <div><span><b>À inspecter</b><small>Visite terrain</small></span><strong>${toInspect.length}</strong></div>
+            <div><span><b>Rapports</b><small>À transmettre</small></span><strong>${toReport.length}</strong></div>
+            <div><span><b>Travaux</b><small>En intervention</small></span><strong>${inWork.length}</strong></div>
+            <div><span><b>Terminées</b><small>Historique</small></span><strong>${done.length}</strong></div>
+          </div></section>
+          <section class="agent-side-card agent-field-kit"><div class="agent-side-card-heading"><span>${icon('briefcase-business',15)} Sur le terrain</span></div><ul><li>${icon('camera',14)} Photographier le constat</li><li>${icon('clipboard-list',14)} Décrire les observations</li><li>${icon('map-pin-check',14)} Confirmer le lieu</li><li>${icon('send',14)} Transmettre le rapport</li></ul></section>
+          <section class="agent-side-card agent-priority-card"><div class="agent-side-card-heading"><span>${icon('triangle-alert',15)} Priorité terrain</span></div><p>Une mission <strong>urgente</strong> passe avant les dossiers standards lorsqu’elle concerne un danger pour les usagers.</p><span class="agent-priority-note">${urgent.length} urgente${urgent.length > 1 ? 's' : ''} actuellement</span></section>
+        </aside>
       </div>
-      
-      <!-- Liste des Missions avec Rapport d'inspection & Autorisation Mairie -->
-      <div style="display:flex; flex-direction:column; gap:16px;">
-        <h3 style="font-size:16px; font-weight:800; color:var(--text-main);">
-          Feuille de route opérationnelle
-        </h3>
-        
-        ${assignedReports.map(report => `
-          <div class="agent-mission-card">
-            <div class="agent-mission-top">
-              <div style="display:flex; align-items:center; gap:14px;">
-                <img class="report-thumb-img" src="${report.photo}" alt="" style="width:72px; height:72px;">
-                <div>
-                  <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
-                    <span class="status-tag ${statusClasses[report.status]}">
-                      ${statusLabels[report.status]}
-                    </span>
-                    <span style="font-size:11.5px; font-weight:700; color:var(--text-muted);">
-                      ${report.id} · Priorité ${report.priority}
-                    </span>
-                  </div>
-                  <h4 style="font-size:16px; font-weight:800; color:var(--text-main);">
-                    ${escapeHtml(report.title)}
-                  </h4>
-                  <div style="font-size:12.5px; color:var(--text-muted); display:flex; align-items:center; gap:6px; margin-top:3px;">
-                    ${icon('map-pin', 13)} ${escapeHtml(report.location)}
-                  </div>
-                </div>
-              </div>
-              
-              <div style="display:flex; align-items:center; gap:10px;">
-                ${report.status === 'assigned' ? `
-                  <button class="btn-primary-green" data-action="agent-start-inspection" data-id="${report.id}">
-                    ${icon('clipboard', 14)} Démarrer l’inspection
-                  </button>
-                ` : report.status === 'inspection' ? `
-                  <button class="btn-primary-green" data-action="agent-submit-report" data-id="${report.id}">
-                    ${icon('send', 14)} Rédiger le rapport
-                  </button>
-                ` : report.status === 'progress' ? `
-                  <button class="btn-primary-green" data-action="agent-resolve" data-id="${report.id}">
-                    ${icon('check-circle', 14)} Clôturer & Marquer résolu
-                  </button>
-                ` : `
-                  <span style="font-size:12.5px; font-weight:700; color:#16a34a; display:flex; align-items:center; gap:6px;">
-                    ${icon('check-circle-2', 16)} Mission terminée
-                  </span>
-                `}
-              </div>
-            </div>
-            
-            <!-- Encadré Rapport d'Inspection Technique -->
-            ${report.report ? `
-              <div class="inspection-report-box">
-                <div class="inspection-header">
-                  <div class="inspection-title-badge">
-                    ${icon('clipboard-check', 16)} Rapport d’inspection technique sur site
-                  </div>
-                  <span class="inspection-meta">Validé par l'Agent Amadou Sow</span>
-                </div>
-                
-                <div class="inspection-content-grid">
-                  <div class="inspection-text-details">
-                    <p><strong>Constat de terrain :</strong> ${escapeHtml(report.report)}</p>
-                    <p style="color:var(--text-muted); font-size:11.5px;">Matériel préconisé : Camion benne, bitume à froid 2T, signalisation de sécurité VDN.</p>
-                  </div>
-                  ${report.photo ? `
-                    <img class="inspection-photo-thumb" src="${report.photo}" alt="Inspection photo">
-                  ` : ''}
-                </div>
-              </div>
-            ` : ''}
-            
-            <!-- Encadré Autorisation Mairie (si accordé) -->
-            ${report.authorized ? `
-              <div class="authorization-box">
-                <div class="authorization-stamp">
-                  <div class="authorization-stamp-icon">
-                    ${icon('stamp', 22)}
-                  </div>
-                  <div>
-                    <strong style="color:var(--primary-green); font-size:14px; display:block;">
-                      Arrêté Municipal d'Intervention Validé
-                    </strong>
-                    <span style="font-size:12px; color:var(--text-muted);">
-                      Autorisé par : Mairie Régionale de Dakar · Dossier conforme aux normes d'aménagement
-                    </span>
-                  </div>
-                </div>
-                <div style="font-size:11.5px; font-weight:800; color:var(--primary-green); text-transform:uppercase;">
-                  Feu vert travaux
-                </div>
-              </div>
-            ` : ''}
-          </div>
-        `).join('')}
-      </div>
-    </div>
-  `;
+    </section>`;
 }
 
-// ==========================================================================
-// DASHBOARD ADMINISTRATEUR RÉGIONAL (MAIRIE DE DAKAR & 14 RÉGIONS)
-// ==========================================================================
 function adminDashboardView() {
-  const unassigned = state.reports.filter(r => r.status === 'received');
-  const awaitingReports = state.reports.filter(r => r.status === 'awaiting');
-  const inProgress = state.reports.filter(r => r.status === 'progress' || r.status === 'assigned');
-  const resolved = state.reports.filter(r => r.status === 'resolved');
-  
-  const total = state.reports.length;
-  const pctUnassigned = Math.round((unassigned.length / total) * 100);
-  const pctInProgress = Math.round((inProgress.length / total) * 100);
-  const pctResolved = Math.round((resolved.length / total) * 100);
+  const regionalReports = state.reports.filter(r => r.region === state.region);
+  const toAssign = regionalReports.filter(r => r.status === 'received');
+  const toValidate = regionalReports.filter(r => r.status === 'awaiting');
+  const inProgress = regionalReports.filter(r => ['assigned', 'inspection', 'progress'].includes(r.status));
+  const resolved = regionalReports.filter(r => r.status === 'resolved');
+  const urgent = regionalReports.filter(r => r.priority === 'Urgente' && !['resolved', 'rejected'].includes(r.status));
+  const total = regionalReports.length;
+  const recentReports = regionalReports
+    .filter(r => `${r.title} ${r.category} ${r.location}`.toLowerCase().includes(state.query.toLowerCase()))
+    .slice(0, 7);
+  const pct = (value) => total ? Math.round((value / total) * 100) : 0;
+
+  const actionFor = (report) => {
+    if (report.status === 'received') {
+      return `<button class="btn-primary-green admin-supervision-action" data-action="admin-assign" data-id="${report.id}">${icon('user-round-plus', 13)} Affecter</button>`;
+    }
+    if (report.status === 'awaiting') {
+      return `<button class="btn-primary-green admin-supervision-action" data-action="admin-authorize" data-id="${report.id}">${icon('stamp', 13)} Autoriser</button>`;
+    }
+    return `<button class="btn-default-outline admin-supervision-action" data-action="open-detail" data-id="${report.id}">${icon('eye', 13)} Détails</button>`;
+  };
 
   return `
-    <div style="display:flex; flex-direction:column; gap:22px;">
-      <!-- Grille KPI 4 Cartes -->
-      <div class="admin-kpi-grid">
-        <div class="kpi-stat-box">
-          <div class="kpi-icon-pill red">${icon('inbox', 22)}</div>
-          <div class="kpi-data-content">
-            <span class="kpi-label-text">Nouveaux / À affecter</span>
-            <span class="kpi-count-number">${unassigned.length}</span>
+    <section class="admin-dashboard supervision-dashboard">
+      <header class="citizen-welcome-hero admin-supervision-hero">
+        <div>
+          <span class="citizen-section-kicker admin-supervision-kicker">${icon('landmark', 14)} Supervision Régionale</span>
+          <h1>Pilotage de la région de ${escapeHtml(state.region)}</h1>
+          <p>Suivez les signalements, affectez les dossiers aux services municipaux et validez les rapports transmis par le terrain.</p>
+          <div class="citizen-hero-meta">
+            <span>${icon('map-pin', 13)} Région active : ${escapeHtml(state.region)}</span>
+            <span>${icon('clipboard-list', 13)} ${total} dossier${total !== 1 ? 's' : ''} régional${total !== 1 ? 'x' : ''}</span>
           </div>
         </div>
-        
-        <div class="kpi-stat-box">
-          <div class="kpi-icon-pill orange">${icon('clipboard-check', 22)}</div>
-          <div class="kpi-data-content">
-            <span class="kpi-label-text">Rapports d’inspection à valider</span>
-            <span class="kpi-count-number">${awaitingReports.length}</span>
-          </div>
+        <div class="admin-supervision-focus">
+          <span>À traiter maintenant</span>
+          <strong>${toAssign.length + toValidate.length}</strong>
+          <small>${urgent.length} urgente${urgent.length !== 1 ? 's' : ''}</small>
         </div>
-        
-        <div class="kpi-stat-box">
-          <div class="kpi-icon-pill blue">${icon('wrench', 22)}</div>
-          <div class="kpi-data-content">
-            <span class="kpi-label-text">Chantiers en cours</span>
-            <span class="kpi-count-number">${inProgress.length}</span>
+      </header>
+
+      <section class="citizen-kpi-grid admin-supervision-kpis">
+        <div class="citizen-kpi-card"><span class="citizen-kpi-icon">${icon('inbox', 18)}</span><div><small>À affecter</small><strong>${toAssign.length}</strong><span>Nouveaux dossiers</span></div></div>
+        <div class="citizen-kpi-card"><span class="citizen-kpi-icon">${icon('clipboard-check', 18)}</span><div><small>À valider</small><strong>${toValidate.length}</strong><span>Rapports terrain</span></div></div>
+        <div class="citizen-kpi-card"><span class="citizen-kpi-icon">${icon('wrench', 18)}</span><div><small>En cours</small><strong>${inProgress.length}</strong><span>Services mobilisés</span></div></div>
+        <div class="citizen-kpi-card"><span class="citizen-kpi-icon">${icon('check-circle-2', 18)}</span><div><small>Résolus</small><strong>${resolved.length}</strong><span>Dossiers clôturés</span></div></div>
+      </section>
+
+      <div class="citizen-dashboard-grid admin-supervision-grid">
+        <section class="citizen-feed-panel">
+          <div class="citizen-section-heading">
+            <div>
+              <span class="citizen-section-kicker">${icon('radio', 14)} Suivi régional</span>
+              <h3>Signalements de ${escapeHtml(state.region)}</h3>
+              <p>Les dossiers nécessitant une affectation, une validation ou un suivi municipal.</p>
+            </div>
+            <span class="admin-supervision-count">${regionalReports.length} dossiers</span>
           </div>
-        </div>
-        
-        <div class="kpi-stat-box">
-          <div class="kpi-icon-pill green">${icon('check-circle', 22)}</div>
-          <div class="kpi-data-content">
-            <span class="kpi-label-text">Résolus & Clôturés</span>
-            <span class="kpi-count-number">${resolved.length}</span>
+          <div class="citizen-search-bar admin-supervision-search">
+            ${icon('search', 16)}
+            <input type="search" data-action="admin-search" placeholder="Rechercher un signalement..." value="${escapeHtml(state.query)}" oninput="state.query = this.value; render();">
           </div>
-        </div>
+          <div class="admin-supervision-list">
+            ${recentReports.length ? recentReports.map(report => `
+              <article class="admin-supervision-report" data-action="open-detail" data-id="${report.id}" tabindex="0" role="button">
+                <div class="admin-supervision-report-main">
+                  <div>
+                    <div class="admin-supervision-report-top">
+                      <span class="admin-supervision-id">${escapeHtml(report.id)}</span>
+                      <span class="status-tag ${statusClasses[report.status]}">${statusLabels[report.status]}</span>
+                    </div>
+                    <h4>${escapeHtml(report.title)}</h4>
+                    <p>${icon('map-pin', 12)} ${escapeHtml(report.location)}</p>
+                    <small>${escapeHtml(report.category)} · ${escapeHtml(report.service)} · ${report.date}</small>
+                  </div>
+                  <div class="admin-supervision-report-side">
+                    <span class="admin-supervision-priority ${report.priority === 'Urgente' ? 'is-urgent' : ''}">${escapeHtml(report.priority)}</span>
+                    <strong>${icon('users', 12)} ${report.supports}</strong>
+                    <div onclick="event.stopPropagation();">${actionFor(report)}</div>
+                  </div>
+                </div>
+              </article>
+            `).join('') : `
+              <div class="citizen-empty-state">${icon('search-x', 24)}<strong>Aucun dossier trouvé</strong><span>Essayez une autre recherche ou vérifiez la région active.</span></div>
+            `}
+          </div>
+        </section>
+
+        <aside class="citizen-side-column">
+          <section class="dashboard-card-widget admin-supervision-side-card">
+            <div class="admin-supervision-side-heading"><span>${icon('list-checks', 15)} Priorités de supervision</span></div>
+            <div class="admin-supervision-status-list">
+              <div><span><b>À affecter</b><small>Nouveaux dossiers</small></span><strong>${toAssign.length}</strong></div>
+              <div><span><b>À valider</b><small>Rapports terrain</small></span><strong>${toValidate.length}</strong></div>
+              <div><span><b>En cours</b><small>Services mobilisés</small></span><strong>${inProgress.length}</strong></div>
+              <div><span><b>Résolus</b><small>Dossiers clôturés</small></span><strong>${resolved.length}</strong></div>
+            </div>
+          </section>
+
+          <section class="dashboard-card-widget admin-supervision-side-card">
+            <div class="admin-supervision-side-heading"><span>${icon('pie-chart', 15)} État du traitement</span></div>
+            <div class="admin-supervision-progress">
+              <div><span>À affecter</span><strong>${pct(toAssign.length)}%</strong></div>
+              <div class="admin-supervision-bar"><span style="width:${pct(toAssign.length)}%"></span></div>
+              <div><span>En cours</span><strong>${pct(inProgress.length)}%</strong></div>
+              <div class="admin-supervision-bar"><span style="width:${pct(inProgress.length)}%"></span></div>
+              <div><span>Résolus</span><strong>${pct(resolved.length)}%</strong></div>
+              <div class="admin-supervision-bar"><span style="width:${pct(resolved.length)}%"></span></div>
+            </div>
+          </section>
+
+          <section class="dashboard-card-widget admin-supervision-side-card">
+            <div class="admin-supervision-side-heading"><span>${icon('zap', 15)} Actions rapides</span></div>
+            <button class="btn-default-outline admin-quick-action" data-action="navigate" data-view="to-assign">${icon('inbox', 14)} Voir les dossiers à affecter</button>
+            <button class="btn-default-outline admin-quick-action" data-action="navigate" data-view="to-validate">${icon('file-check', 14)} Voir les rapports à valider</button>
+            <button class="btn-default-outline admin-quick-action" data-action="navigate" data-view="services">${icon('wrench', 14)} Services municipaux</button>
+          </section>
+        </aside>
       </div>
-      
-      <!-- Ligne Médiane : Donut Chart SVG & Répartition Régionale -->
-      <div class="admin-middle-row">
-        <!-- Widget Donut SVG Moderne -->
-        <div class="dashboard-card-widget">
-          <div class="widget-header-title">
-            <span>${icon('pie-chart', 16)} État du Traitement Urbain</span>
-            <span style="font-size:12px; color:var(--text-muted);">Total : ${total} dossiers</span>
-          </div>
-          
-          <div class="donut-chart-container">
-            <div class="donut-svg-wrap">
-              <svg viewBox="0 0 36 36" style="width:100%; height:100%; transform:rotate(-90deg);">
-                <!-- Cercle de fond -->
-                <circle cx="18" cy="18" r="15.915" fill="transparent" stroke="var(--border-color)" stroke-width="3.2"></circle>
-                <!-- Segment Résolu (Vert) -->
-                <circle cx="18" cy="18" r="15.915" fill="transparent" stroke="#16a34a" stroke-width="3.6"
-                  stroke-dasharray="${pctResolved} ${100 - pctResolved}" stroke-dashoffset="0"></circle>
-                <!-- Segment En cours (Bleu) -->
-                <circle cx="18" cy="18" r="15.915" fill="transparent" stroke="#2563eb" stroke-width="3.6"
-                  stroke-dasharray="${pctInProgress} ${100 - pctInProgress}" stroke-dashoffset="${-pctResolved}"></circle>
-                <!-- Segment À affecter (Orange) -->
-                <circle cx="18" cy="18" r="15.915" fill="transparent" stroke="#f97316" stroke-width="3.6"
-                  stroke-dasharray="${pctUnassigned} ${100 - pctUnassigned}" stroke-dashoffset="${-(pctResolved + pctInProgress)}"></circle>
-              </svg>
-              <div class="donut-center-total">
-                <span class="num">${total}</span>
-                <span class="lbl">Signalements</span>
-              </div>
-            </div>
-            
-            <div class="donut-legend-list">
-              <div class="legend-item-row">
-                <span class="legend-dot" style="background-color:#f97316;"></span>
-                <span>À affecter</span>
-                <span class="legend-percent">${pctUnassigned}% (${unassigned.length})</span>
-              </div>
-              <div class="legend-item-row">
-                <span class="legend-dot" style="background-color:#2563eb;"></span>
-                <span>En cours / Inspecté</span>
-                <span class="legend-percent">${pctInProgress}% (${inProgress.length})</span>
-              </div>
-              <div class="legend-item-row">
-                <span class="legend-dot" style="background-color:#16a34a;"></span>
-                <span>Résolus</span>
-                <span class="legend-percent">${pctResolved}% (${resolved.length})</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Widget Répartition par Arrondissement / Commune -->
-        <div class="dashboard-card-widget">
-          <div class="widget-header-title">
-            <span>${icon('map', 16)} Répartition des Signalements · ${state.region}</span>
-            <span style="font-size:12px; color:var(--primary-green); font-weight:700;">Temps moyen : 48h</span>
-          </div>
-          
-          <div class="admin-map-preview-wrap">
-            <div class="region-stat-row">
-              <div class="region-stat-header">
-                <span>Dakar Plateau & Médina</span>
-                <span>42% (26 dossiers)</span>
-              </div>
-              <div class="region-progress-bar">
-                <div class="region-progress-fill" style="width:42%;"></div>
-              </div>
-            </div>
-            
-            <div class="region-stat-row">
-              <div class="region-stat-header">
-                <span>Grand Dakar & Castors</span>
-                <span>28% (17 dossiers)</span>
-              </div>
-              <div class="region-progress-bar">
-                <div class="region-progress-fill" style="width:28%; background-color:#2563eb;"></div>
-              </div>
-            </div>
-            
-            <div class="region-stat-row">
-              <div class="region-stat-header">
-                <span>Parcelles Assainies & Almadies</span>
-                <span>18% (11 dossiers)</span>
-              </div>
-              <div class="region-progress-bar">
-                <div class="region-progress-fill" style="width:18%; background-color:#f59e0b;"></div>
-              </div>
-            </div>
-            
-            <div class="region-stat-row">
-              <div class="region-stat-header">
-                <span>Pikine, Guédiawaye & Rufisque</span>
-                <span>12% (8 dossiers)</span>
-              </div>
-              <div class="region-progress-bar">
-                <div class="region-progress-fill" style="width:12%; background-color:#8b5cf6;"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Table des Signalements Propre & Épurée -->
-      <div class="dashboard-card-widget" style="padding:0; overflow:hidden;">
-        <div style="padding:18px 24px; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
-          <div>
-            <h3 style="font-size:16px; font-weight:800; color:var(--text-main);">
-              Registre Général des Signalements
-            </h3>
-            <p style="font-size:12.5px; color:var(--text-muted);">
-              Affectation directe aux services municipaux et délivrance des autorisations de travaux.
-            </p>
-          </div>
-          
-          <div style="display:flex; gap:8px;">
-            <input class="auth-input" type="text" placeholder="Filtrer un dossier..." style="width:220px; padding:6px 12px; font-size:12px;" value="${escapeHtml(state.query)}" oninput="state.query = this.value; render();">
-          </div>
-        </div>
-        
-        <table class="clean-data-table">
-          <thead>
-            <tr>
-              <th>ID & Problème</th>
-              <th>Catégorie</th>
-              <th>Localisation</th>
-              <th>Priorité</th>
-              <th>Soutiens</th>
-              <th>Statut</th>
-              <th style="text-align:right;">Action Mairie</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${state.reports.map(report => `
-              <tr onclick="window.openReportDetails('${report.id}')">
-                <td>
-                  <strong style="color:var(--text-main); font-weight:800; display:block;">${escapeHtml(report.title)}</strong>
-                  <span style="font-size:11px; color:var(--text-muted); font-weight:600;">${report.id} · ${report.date}</span>
-                </td>
-                <td>
-                  <span style="font-weight:700; font-size:12.5px; color:var(--text-main);">${escapeHtml(report.category)}</span>
-                </td>
-                <td style="font-size:12px; color:var(--text-muted);">
-                  ${icon('map-pin', 12)} ${escapeHtml(report.location)}
-                </td>
-                <td>
-                  <span class="status-tag ${report.priority === 'Urgente' ? 'nouveau' : 'pris_en_charge'}">
-                    ${report.priority}
-                  </span>
-                </td>
-                <td>
-                  <span style="font-weight:800; color:var(--primary-green); display:flex; align-items:center; gap:4px;">
-                    ${icon('users', 12)} ${report.supports}
-                  </span>
-                </td>
-                <td>
-                  <span class="status-tag ${statusClasses[report.status]}">
-                    ${statusLabels[report.status]}
-                  </span>
-                </td>
-                <td style="text-align:right;" onclick="event.stopPropagation();">
-                  ${report.status === 'received' ? `
-                    <button class="btn-primary-green" style="padding:6px 12px; font-size:12px;" data-action="admin-assign" data-id="${report.id}">
-                      Affecter au service
-                    </button>
-                  ` : report.status === 'awaiting' ? `
-                    <button class="btn-primary-green" style="padding:6px 12px; font-size:12px; background-color:#2563eb;" data-action="admin-authorize" data-id="${report.id}">
-                      ${icon('stamp', 13)} Autoriser travaux
-                    </button>
-                  ` : `
-                    <button class="btn-default-outline" style="padding:6px 12px; font-size:12px;" data-action="open-detail" data-id="${report.id}">
-                      Détails
-                    </button>
-                  `}
-                </td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      </div>
-    </div>
+    </section>
   `;
 }
 
-// ==========================================================================
-// VUES COMPLÉMENTAIRES (MES SIGNALEMENTS, INSPECTIONS, SERVICES)
-// ==========================================================================
 function citizenMyReportsView() {
-  const myReports = state.reports.filter(r => r.author === 'Awa Diop');
+  const myReports = state.reports
+    .filter(r => r.author === 'Awa Diop')
+    .sort((a, b) => state.reports.indexOf(a) - state.reports.indexOf(b));
+
+  const progress = {
+    received: 25,
+    assigned: 45,
+    inspection: 65,
+    awaiting: 78,
+    progress: 88,
+    resolved: 100,
+    rejected: 100
+  };
+
+  const stepLabels = [
+    { key: 'received', label: 'Reçu' },
+    { key: 'assigned', label: 'Affecté' },
+    { key: 'inspection', label: 'Inspection' },
+    { key: 'progress', label: 'Intervention' },
+    { key: 'resolved', label: 'Terminé' }
+  ];
+
+  const reportCard = report => {
+    const isRejected = report.status === 'rejected';
+    const currentProgress = progress[report.status] ?? 25;
+    const activeIndex = isRejected
+      ? -1
+      : Math.max(0, stepLabels.findIndex(step => step.key === report.status));
+
+    return `
+      <article class="my-report-card">
+        <div class="my-report-card-top">
+          <div class="my-report-image">
+            <img src="${report.photo || 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=700&q=80'}" alt="${escapeHtml(report.title)}">
+            <span class="status-tag ${statusClasses[report.status]}">${statusLabels[report.status]}</span>
+          </div>
+          <div class="my-report-main">
+            <div class="my-report-meta">
+              <span>${escapeHtml(report.id)}</span>
+              <span>${escapeHtml(report.category)}</span>
+            </div>
+            <h3>${escapeHtml(report.title)}</h3>
+            <div class="my-report-location">${icon('map-pin', 13)} <span>${escapeHtml(report.location)}</span></div>
+            <div class="my-report-date">${icon('calendar-days', 12)} Déposé le ${escapeHtml(report.date)}</div>
+          </div>
+          <button class="my-report-detail-btn" data-action="open-detail" data-id="${report.id}">
+            ${icon('arrow-up-right', 14)} Voir le détail
+          </button>
+        </div>
+
+        <div class="my-report-progress">
+          <div class="my-report-progress-head">
+            <div>
+              <span class="my-report-section-label">${icon('route', 13)} Suivi du traitement</span>
+              <strong>${isRejected ? 'Signalement rejeté' : currentProgress === 100 ? 'Traitement terminé' : 'Traitement en cours'}</strong>
+            </div>
+            <span class="my-report-progress-value">${currentProgress}%</span>
+          </div>
+          <div class="my-report-progress-bar"><span style="width:${currentProgress}%"></span></div>
+          <div class="my-report-steps">
+            ${stepLabels.map((step, index) => {
+              const done = !isRejected && index <= activeIndex;
+              return `
+                <div class="my-report-step ${done ? 'is-done' : ''}">
+                  <span class="my-report-step-dot">${done ? icon('check', 10) : ''}</span>
+                  <span>${step.label}</span>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+
+        <div class="my-report-card-footer">
+          <span>${icon('users', 13)} ${report.supports} soutien${report.supports > 1 ? 's' : ''}</span>
+          <span>${icon('layers-3', 13)} ${escapeHtml(report.service || 'Service municipal')}</span>
+          <button class="my-report-mobile-detail" data-action="open-detail" data-id="${report.id}">Consulter le signalement ${icon('chevron-right', 13)}</button>
+        </div>
+      </article>
+    `;
+  };
+
   return `
-    <div style="display:flex; flex-direction:column; gap:18px;">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
+    <section class="my-reports-page">
+      <header class="my-reports-page-header">
         <div>
-          <h2 style="font-size:20px; font-weight:800; color:var(--text-main);">Mes Remontées Citoyennes</h2>
-          <p style="font-size:13px; color:var(--text-muted);">Historique de vos signalements et statut d’intervention en direct.</p>
+          <span class="my-reports-kicker">${icon('file-text', 14)} Mon espace citoyen</span>
+          <h2>Mes signalements</h2>
+          <p>Retrouvez vos signalements, leur progression et les dernières informations de traitement.</p>
         </div>
         <button class="btn-primary-green" data-action="navigate" data-view="new-report">
-          ${icon('plus-circle', 16)} Nouveau signalement
+          ${icon('plus-circle', 15)} Nouveau signalement
         </button>
+      </header>
+
+      <div class="my-reports-summary">
+        <div><span>Signalements</span><strong>${myReports.length}</strong></div>
+        <div><span>En cours</span><strong>${myReports.filter(r => !['resolved','rejected'].includes(r.status)).length}</strong></div>
+        <div><span>Terminés</span><strong>${myReports.filter(r => r.status === 'resolved').length}</strong></div>
+        <div><span>Soutiens reçus</span><strong>${myReports.reduce((total, r) => total + (r.supports || 0), 0)}</strong></div>
       </div>
 
-      <div class="citizen-reports-grid">
-        ${myReports.map(report => `
-          <div class="citizen-report-card" data-action="open-detail" data-id="${report.id}">
-            <img class="report-thumb-img" src="${report.photo || 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=160&q=75'}" alt="${escapeHtml(report.title)}">
-            <div class="report-card-info">
-              <div>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                  <span style="font-size:10.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">
-                    ${escapeHtml(report.category)} · ${report.id}
-                  </span>
-                  <span class="status-tag ${statusClasses[report.status]}">
-                    ${statusLabels[report.status]}
-                  </span>
-                </div>
-                <h4 class="report-title-text">${escapeHtml(report.title)}</h4>
-                <div class="report-loc-time">
-                  ${icon('map-pin', 12)} ${escapeHtml(report.location)}
-                </div>
-              </div>
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; padding-top:8px; border-top:1px solid var(--border-color);">
-                <span style="font-size:12px; font-weight:700; color:var(--primary-green); display:flex; align-items:center; gap:5px;">
-                  ${icon('users', 13)} ${report.supports} soutiens
-                </span>
-                <span style="font-size:11px; color:var(--text-muted); font-weight:600;">
-                  Déposé le ${report.date}
-                </span>
-              </div>
-            </div>
+      <div class="my-reports-list">
+        ${myReports.length ? myReports.map(reportCard).join('') : `
+          <div class="my-reports-empty">
+            ${icon('file-plus-2', 28)}
+            <strong>Aucun signalement pour le moment</strong>
+            <span>Créez votre premier signalement pour suivre son traitement ici.</span>
+            <button class="btn-primary-green" data-action="navigate" data-view="new-report">${icon('plus', 14)} Signaler un problème</button>
           </div>
-        `).join('')}
+        `}
       </div>
-    </div>
+    </section>
   `;
 }
 
@@ -1737,33 +1448,28 @@ function openReportDetailsModal(reportId) {
   state.activeModal = {
     title: `${report.id} · ${report.title}`,
     content: `
-      <div style="display:flex; flex-direction:column; gap:16px;">
-        <img src="${report.photo}" alt="" style="width:100%; height:200px; object-fit:cover; border-radius:var(--radius-lg);">
-        
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <span class="status-tag ${statusClasses[report.status]}">
-            ${statusLabels[report.status]}
-          </span>
-          <span style="font-size:12.5px; font-weight:700; color:var(--text-muted);">
-            Priorité : <strong>${report.priority}</strong> · Service : <strong>${report.service}</strong>
-          </span>
+      <div class="report-detail-modal-content">
+        <img class="report-detail-modal-image" src="${report.photo || 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=900&q=80'}" alt="${escapeHtml(report.title)}">
+        <div class="report-detail-modal-status">
+          <span class="status-tag ${statusClasses[report.status]}">${statusLabels[report.status]}</span>
+          <span class="report-detail-priority">Priorité : <strong>${escapeHtml(report.priority)}</strong> · ${escapeHtml(report.service || 'Service municipal')}</span>
         </div>
-        
-        <div>
-          <h4 style="font-size:14px; font-weight:800; color:var(--text-main); margin-bottom:4px;">Description du problème :</h4>
-          <p style="font-size:13px; color:var(--text-muted); line-height:1.5;">${escapeHtml(report.description)}</p>
+        <div class="report-detail-section">
+          <span class="report-detail-label">${icon('file-text', 13)} Description du problème</span>
+          <p>${escapeHtml(report.description || 'Aucune description renseignée.')}</p>
         </div>
-        
-        <div style="font-size:12.5px; color:var(--text-main); display:flex; align-items:center; gap:8px;">
-          ${icon('map-pin', 14)} <strong>Localisation :</strong> ${escapeHtml(report.location)}
+        <div class="report-detail-location">
+          ${icon('map-pin', 14)}
+          <div><span>Localisation</span><strong>${escapeHtml(report.location)}</strong></div>
         </div>
-        
+        <div class="report-detail-meta-grid">
+          <div><span>Date du signalement</span><strong>${escapeHtml(report.date)}</strong></div>
+          <div><span>Soutiens</span><strong>${report.supports} citoyen${report.supports > 1 ? 's' : ''}</strong></div>
+        </div>
         ${report.report ? `
-          <div class="inspection-report-box" style="margin-top:8px;">
-            <div class="inspection-header">
-              <span class="inspection-title-badge">${icon('file-text', 14)} Constat Technique d’Inspection</span>
-            </div>
-            <p style="font-size:12.5px; color:var(--text-main); margin-top:6px;">${escapeHtml(report.report)}</p>
+          <div class="inspection-report-box">
+            <div class="inspection-header"><span class="inspection-title-badge">${icon('clipboard-check', 14)} Constat technique</span></div>
+            <p>${escapeHtml(report.report)}</p>
           </div>
         ` : ''}
       </div>
@@ -1771,14 +1477,13 @@ function openReportDetailsModal(reportId) {
     buttons: `
       <button class="btn-default-outline" onclick="window.closeModal();">Fermer</button>
       <button class="btn-primary-green" data-action="toggle-support" data-id="${report.id}" onclick="window.closeModal();">
-        ${icon('users', 14)} Soutenir (${report.supports})
+        ${icon('users', 14)} ${report.supportedByUser ? 'Soutenu' : 'Soutenir'} (${report.supports})
       </button>
     `
   };
   render();
 }
 
-// ==========================================================================
 // GESTION DES ACTIONS ET ÉVÉNEMENTS GLOBAUX
 // ==========================================================================
 window.closeModal = function() {
@@ -1808,6 +1513,24 @@ window.handlePhotoUpload = function(event) {
     };
     reader.readAsDataURL(file);
   }
+};
+
+window.handleWizardNext = function() {
+  const step = state.activeStep || 1;
+  if (step === 1) {
+    const location = document.querySelector('#draft-location')?.value.trim();
+    if (!location) return notify('Indiquez une adresse, un quartier ou un repère.', 'warning');
+    state.draft.region = document.querySelector('#draft-region')?.value || state.region;
+    state.draft.location = location;
+  } else if (step === 2) {
+    const title = document.querySelector('#draft-title')?.value.trim();
+    const desc = document.querySelector('#draft-description')?.value.trim();
+    if (!title || !desc) return notify('Ajoutez un titre et une description du problème.', 'warning');
+    state.draft.title = title;
+    state.draft.description = desc;
+  }
+  state.activeStep = Math.min(4, step + 1);
+  render();
 };
 
 window.submitNewReport = function() {
@@ -1851,6 +1574,7 @@ window.submitNewReport = function() {
     priority: 'Moyenne'
   };
   state.view = 'dashboard';
+  state.activeStep = 1;
   render();
   notify(`Signalement ${newId} transmis avec succès à la Mairie !`);
 };
@@ -1897,6 +1621,13 @@ app.addEventListener('click', (event) => {
     return;
   }
   
+  if (action === 'toggle-my-reports') {
+    if (target.closest('.citizen-track-button')) return;
+    state.myReportsExpanded = !state.myReportsExpanded;
+    render();
+    return;
+  }
+  
   if (action === 'open-detail') {
     openReportDetailsModal(target.dataset.id);
     return;
@@ -1939,8 +1670,22 @@ app.addEventListener('click', (event) => {
     return;
   }
   
+  if (action === 'wizard-back') {
+    state.activeStep = Math.max(1, (state.activeStep || 1) - 1);
+    render();
+    return;
+  }
+  if (action === 'submit-report') {
+    window.submitNewReport();
+    return;
+  }
+
   // Wizard selections
   if (action === 'select-category') {
+    const titleInput = document.querySelector('#draft-title');
+    const descriptionInput = document.querySelector('#draft-description');
+    if (titleInput) state.draft.title = titleInput.value;
+    if (descriptionInput) state.draft.description = descriptionInput.value;
     state.draft.category = target.dataset.cat;
     render();
     return;
@@ -2052,6 +1797,21 @@ app.addEventListener('click', (event) => {
   if (action === 'clear-notifs') {
     notify('Toutes les notifications ont été marquées comme lues.');
     return;
+  }
+});
+
+// Recherche instantanée du tableau de bord citoyen
+app.addEventListener('input', (event) => {
+  const target = event.target;
+  if (target.dataset.action === 'citizen-search') {
+    state.query = target.value;
+    const caret = target.selectionStart;
+    render();
+    const input = document.querySelector('[data-action="citizen-search"]');
+    if (input) {
+      input.focus();
+      input.setSelectionRange(caret, caret);
+    }
   }
 });
 
