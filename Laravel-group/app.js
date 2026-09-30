@@ -1081,51 +1081,118 @@ function adminDashboardView() {
 }
 
 function citizenMyReportsView() {
-  const myReports = state.reports.filter(r => r.author === 'Awa Diop');
+  const myReports = state.reports
+    .filter(r => r.author === 'Awa Diop')
+    .sort((a, b) => state.reports.indexOf(a) - state.reports.indexOf(b));
+
+  const progress = {
+    received: 25,
+    assigned: 45,
+    inspection: 65,
+    awaiting: 78,
+    progress: 88,
+    resolved: 100,
+    rejected: 100
+  };
+
+  const stepLabels = [
+    { key: 'received', label: 'Reçu' },
+    { key: 'assigned', label: 'Affecté' },
+    { key: 'inspection', label: 'Inspection' },
+    { key: 'progress', label: 'Intervention' },
+    { key: 'resolved', label: 'Terminé' }
+  ];
+
+  const reportCard = report => {
+    const isRejected = report.status === 'rejected';
+    const currentProgress = progress[report.status] ?? 25;
+    const activeIndex = isRejected
+      ? -1
+      : Math.max(0, stepLabels.findIndex(step => step.key === report.status));
+
+    return `
+      <article class="my-report-card">
+        <div class="my-report-card-top">
+          <div class="my-report-image">
+            <img src="${report.photo || 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=700&q=80'}" alt="${escapeHtml(report.title)}">
+            <span class="status-tag ${statusClasses[report.status]}">${statusLabels[report.status]}</span>
+          </div>
+          <div class="my-report-main">
+            <div class="my-report-meta">
+              <span>${escapeHtml(report.id)}</span>
+              <span>${escapeHtml(report.category)}</span>
+            </div>
+            <h3>${escapeHtml(report.title)}</h3>
+            <div class="my-report-location">${icon('map-pin', 13)} <span>${escapeHtml(report.location)}</span></div>
+            <div class="my-report-date">${icon('calendar-days', 12)} Déposé le ${escapeHtml(report.date)}</div>
+          </div>
+          <button class="my-report-detail-btn" data-action="open-detail" data-id="${report.id}">
+            ${icon('arrow-up-right', 14)} Voir le détail
+          </button>
+        </div>
+
+        <div class="my-report-progress">
+          <div class="my-report-progress-head">
+            <div>
+              <span class="my-report-section-label">${icon('route', 13)} Suivi du traitement</span>
+              <strong>${isRejected ? 'Signalement rejeté' : currentProgress === 100 ? 'Traitement terminé' : 'Traitement en cours'}</strong>
+            </div>
+            <span class="my-report-progress-value">${currentProgress}%</span>
+          </div>
+          <div class="my-report-progress-bar"><span style="width:${currentProgress}%"></span></div>
+          <div class="my-report-steps">
+            ${stepLabels.map((step, index) => {
+              const done = !isRejected && index <= activeIndex;
+              return `
+                <div class="my-report-step ${done ? 'is-done' : ''}">
+                  <span class="my-report-step-dot">${done ? icon('check', 10) : ''}</span>
+                  <span>${step.label}</span>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+
+        <div class="my-report-card-footer">
+          <span>${icon('users', 13)} ${report.supports} soutien${report.supports > 1 ? 's' : ''}</span>
+          <span>${icon('layers-3', 13)} ${escapeHtml(report.service || 'Service municipal')}</span>
+          <button class="my-report-mobile-detail" data-action="open-detail" data-id="${report.id}">Consulter le signalement ${icon('chevron-right', 13)}</button>
+        </div>
+      </article>
+    `;
+  };
+
   return `
-    <div style="display:flex; flex-direction:column; gap:18px;">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
+    <section class="my-reports-page">
+      <header class="my-reports-page-header">
         <div>
-          <h2 style="font-size:20px; font-weight:800; color:var(--text-main);">Mes Remontées Citoyennes</h2>
-          <p style="font-size:13px; color:var(--text-muted);">Historique de vos signalements et statut d’intervention en direct.</p>
+          <span class="my-reports-kicker">${icon('file-text', 14)} Mon espace citoyen</span>
+          <h2>Mes signalements</h2>
+          <p>Retrouvez vos signalements, leur progression et les dernières informations de traitement.</p>
         </div>
         <button class="btn-primary-green" data-action="navigate" data-view="new-report">
-          ${icon('plus-circle', 16)} Nouveau signalement
+          ${icon('plus-circle', 15)} Nouveau signalement
         </button>
+      </header>
+
+      <div class="my-reports-summary">
+        <div><span>Signalements</span><strong>${myReports.length}</strong></div>
+        <div><span>En cours</span><strong>${myReports.filter(r => !['resolved','rejected'].includes(r.status)).length}</strong></div>
+        <div><span>Terminés</span><strong>${myReports.filter(r => r.status === 'resolved').length}</strong></div>
+        <div><span>Soutiens reçus</span><strong>${myReports.reduce((total, r) => total + (r.supports || 0), 0)}</strong></div>
       </div>
 
-      <div class="citizen-reports-grid">
-        ${myReports.map(report => `
-          <div class="citizen-report-card" data-action="open-detail" data-id="${report.id}">
-            <img class="report-thumb-img" src="${report.photo || 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=160&q=75'}" alt="${escapeHtml(report.title)}">
-            <div class="report-card-info">
-              <div>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                  <span style="font-size:10.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">
-                    ${escapeHtml(report.category)} · ${report.id}
-                  </span>
-                  <span class="status-tag ${statusClasses[report.status]}">
-                    ${statusLabels[report.status]}
-                  </span>
-                </div>
-                <h4 class="report-title-text">${escapeHtml(report.title)}</h4>
-                <div class="report-loc-time">
-                  ${icon('map-pin', 12)} ${escapeHtml(report.location)}
-                </div>
-              </div>
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; padding-top:8px; border-top:1px solid var(--border-color);">
-                <span style="font-size:12px; font-weight:700; color:var(--primary-green); display:flex; align-items:center; gap:5px;">
-                  ${icon('users', 13)} ${report.supports} soutiens
-                </span>
-                <span style="font-size:11px; color:var(--text-muted); font-weight:600;">
-                  Déposé le ${report.date}
-                </span>
-              </div>
-            </div>
+      <div class="my-reports-list">
+        ${myReports.length ? myReports.map(reportCard).join('') : `
+          <div class="my-reports-empty">
+            ${icon('file-plus-2', 28)}
+            <strong>Aucun signalement pour le moment</strong>
+            <span>Créez votre premier signalement pour suivre son traitement ici.</span>
+            <button class="btn-primary-green" data-action="navigate" data-view="new-report">${icon('plus', 14)} Signaler un problème</button>
           </div>
-        `).join('')}
+        `}
       </div>
-    </div>
+    </section>
   `;
 }
 
